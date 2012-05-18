@@ -5,6 +5,7 @@ AC_INIT([libnfc-llcp],[0.1.0])
 AC_CONFIG_MACRO_DIR([m4])
 
 AC_PROG_CC
+AM_PROG_AR
 LT_INIT
 
 AC_C_INLINE
