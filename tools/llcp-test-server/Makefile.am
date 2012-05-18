@@ -1,6 +1,6 @@
 # $Id$
 
-INCLUDES = -I$(top_srcdir)/libnfc-llcp
+AM_CPPFLAGS = -I$(top_srcdir)/libnfc-llcp
 LIBS = -lrt
 AM_CFLAGS = $(LIBNFC_CFLAGS)
 

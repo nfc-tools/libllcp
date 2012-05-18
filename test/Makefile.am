@@ -1,6 +1,6 @@
 # $Id$
 
-INCLUDES = $(CUTTER_CFLAGS) -I$(top_srcdir)/libnfc-llcp
+AM_CPPFLAGS = $(CUTTER_CFLAGS) -I$(top_srcdir)/libnfc-llcp
 LIBS = $(CUTTER_LIBS)
 
 if WITH_CUTTER
