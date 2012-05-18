@@ -1,11 +1,11 @@
 # $Id$
 
-AC_INIT([libnfc-llcp], [0.1.0])
+AC_INIT([libnfc-llcp],[0.1.0])
 
 AC_CONFIG_MACRO_DIR([m4])
 
 AC_PROG_CC
-AC_PROG_LIBTOOL
+LT_INIT
 
 AC_C_INLINE
 
@@ -86,7 +86,7 @@ if test x$cutter_enable_coverage = xyes; then
     CFLAGS="$CFLAGS -O0 -fprofile-arcs -ftest-coverage"
 fi
 
-AC_OUTPUT([
+AC_CONFIG_FILES([
 	   Makefile
 	   doc/Makefile
 	   examples/Makefile
@@ -99,3 +99,4 @@ AC_OUTPUT([
 	   tools/llcp-test-client/Makefile
 	   tools/llcp-test-server/Makefile
 	   ])
+AC_OUTPUT
