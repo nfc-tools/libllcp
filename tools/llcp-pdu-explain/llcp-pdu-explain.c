@@ -28,7 +28,7 @@
 
 #include "llcp_pdu.h"
 
-char *pdu_names[] = {
+const char *pdu_names[] = {
     "SYMM",
     "PAX",
     "AGF",
