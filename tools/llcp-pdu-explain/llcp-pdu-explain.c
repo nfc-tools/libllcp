@@ -47,7 +47,7 @@ const char *pdu_names[] = {
     "???"
 };
 
-void
+static void
 explain_pdu (const char *s)
 {
     unsigned byte;
