@@ -423,10 +423,10 @@ pdu_send (struct mac_link *link, const void *buf, size_t nbytes)
 
     MAC_LINK_LOG (LLC_PRIORITY_TRACE, "Sending %d bytes", nbytes);
     if (link->mode == MAC_LINK_INITIATOR) {
-	link->buffer_size = sizeof (link->buffer);
 	MAC_LINK_LOG (LLC_PRIORITY_TRACE, "LTOs: %d ms (local), %d ms (remote)", timeval_to_ms (link->llc_link->local_lto), timeval_to_ms (link->llc_link->remote_lto));
 	const int timeout = timeval_to_ms (link->llc_link->local_lto) + timeval_to_ms (link->llc_link->remote_lto);
-	res = nfc_initiator_transceive_bytes (link->device, buf, nbytes, link->buffer, &link->buffer_size, timeout);
+	res = nfc_initiator_transceive_bytes (link->device, buf, nbytes, link->buffer, sizeof(link->buffer), timeout);
+	link->buffer_size = (res < 0) ? 0 : res;
     } else {
 	res = nfc_target_send_bytes (link->device, buf, nbytes, -1);
     }

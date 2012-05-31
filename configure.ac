@@ -67,7 +67,7 @@ fi
 m4_ifdef([PKG_CHECK_MODULES], [], AC_MSG_ERROR(["pkg-config (with m4 macros) is requiered."]))
 
 # Checks for pkg-config modules.
-LIBNFC_REQUIRED_VERSION="1.5.1"
+LIBNFC_REQUIRED_VERSION="1.6.0"
 PKG_CHECK_MODULES([LIBNFC], [libnfc >= $LIBNFC_REQUIRED_VERSION], [], AC_MSG_ERROR([libnfc >= $LIBNFC_REQUIRED_VERSION is mandatory.]))
 
 PKG_CONFIG_REQUIRES="libnfc"
