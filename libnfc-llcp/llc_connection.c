@@ -95,7 +95,10 @@ llc_connection_start (struct llc_connection *connection)
 	.mq_maxmsg  = 2,
     };
 
-    asprintf (&connection->mq_up_name, "/libnfc-llcp-%d-%p-%s", getpid(), (void *) connection, "up");
+    if (asprintf (&connection->mq_up_name, "/libnfc-llcp-%d-%p-%s", getpid(), (void *) connection, "up") < 0) {
+	LLC_CONNECTION_LOG (LLC_PRIORITY_FATAL, "Cannot print to allocated string");
+        return -1;
+    }
     connection->llc_up = mq_open (connection->mq_up_name, O_RDWR | O_CREAT, 0666, &attr_up);
     if (connection->llc_up == (mqd_t) -1) {
 	LLC_CONNECTION_LOG (LLC_PRIORITY_FATAL, "Cannot open message queue '%s'", connection->mq_up_name);
@@ -108,7 +111,10 @@ llc_connection_start (struct llc_connection *connection)
 	.mq_maxmsg  = 2,
     };
 
-    asprintf (&connection->mq_down_name, "/libnfc-llcp-%d-%p-%s", getpid(), (void *) connection, "down");
+    if (asprintf (&connection->mq_down_name, "/libnfc-llcp-%d-%p-%s", getpid(), (void *) connection, "down") < 0) {
+	LLC_CONNECTION_LOG (LLC_PRIORITY_FATAL, "Cannot print to allocated string");
+        return -1;
+    }
     connection->llc_down = mq_open (connection->mq_down_name, O_RDWR | O_CREAT | O_NONBLOCK, 0666, &attr_down);
     if (connection->llc_down == (mqd_t) -1) {
 	LLC_CONNECTION_LOG (LLC_PRIORITY_FATAL, "Cannot open message queue '%s'", connection->mq_down_name);

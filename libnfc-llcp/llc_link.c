@@ -66,8 +66,10 @@ llc_link_new (void)
 	link->mac_link = NULL;
 	link->local_miu = LLCP_DEFAULT_MIU;
 
-	asprintf (&link->mq_up_name, "/libnfc-llcp-%d-%p-up", getpid (), (void *) link);
-	asprintf (&link->mq_down_name, "/libnfc-llcp-%d-%p-down", getpid (), (void *) link);
+	if ((asprintf (&link->mq_up_name, "/libnfc-llcp-%d-%p-up", getpid (), (void *) link) < 0) ||
+		(asprintf (&link->mq_down_name, "/libnfc-llcp-%d-%p-down", getpid (), (void *) link) < 0)) {
+	    LLC_LINK_MSG (LLC_PRIORITY_FATAL, "Cannot print to allocated string");
+        }
 	link->llc_up   = (mqd_t) -1;
 	link->llc_down = (mqd_t) -1;
 
@@ -397,7 +399,7 @@ llc_link_deactivate (struct llc_link *link)
     } else {
 	if (link->thread) {
 	    llcp_threadslayer (link->thread);
-	    link->thread = NULL;
+	    link->thread = (pthread_t)NULL;  // XXX Could we assume pthread_t struct is a pointer ?
 	}
     }
 
