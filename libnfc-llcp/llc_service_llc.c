@@ -197,6 +197,15 @@ spawn_logical_data_link:
 	    LLC_SERVICE_LLC_MSG (LLC_PRIORITY_TRACE, "Connect PDU");
 	    if (!link->available_services[pdu->dsap]) {
 		LLC_SERVICE_LLC_LOG (LLC_PRIORITY_FATAL, "No service bound to SAP %d", pdu->dsap);
+		struct pdu *reply;
+		int len;
+		uint8_t reason[] = { 0x02 };    // 0x02 ==> no service bound to the specified target SAP
+		reply = pdu_new_dm (pdu->ssap, pdu->dsap, reason);
+		len = pdu_pack (reply, buffer, sizeof (buffer));
+		pdu_free (reply);
+		if (mq_send (llc_down, (char *) buffer, len, 0) < 0) {
+		    LLC_SERVICE_LLC_MSG (LLC_PRIORITY_FATAL, "Cannot reject connection");
+		}
 		break;
 	    }
 
