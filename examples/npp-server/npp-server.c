@@ -181,7 +181,9 @@ main (int argc, char *argv[])
             exit (EXIT_FAILURE);
         }
     }
-    nfc_init(NULL);
+
+    nfc_context *context;
+    nfc_init(&context);
 
     if (llcp_init () < 0)
 	errx (EXIT_FAILURE, "llcp_init()");
@@ -189,14 +191,7 @@ main (int argc, char *argv[])
     signal (SIGINT, stop_mac_link);
     atexit (bye);
 
-    nfc_connstring connstring;
-    if (!nfc_get_default_device (&connstring)) {
-	errx (EXIT_FAILURE, "No NFC device found");
-    }
-
-    int res;
-
-    if (!(device = nfc_open (NULL, connstring))) {
+    if (!(device = nfc_open (context, NULL))) {
 	errx (EXIT_FAILURE, "Cannot connect to NFC device");
     }
 
@@ -232,6 +227,6 @@ main (int argc, char *argv[])
     nfc_close (device); device = NULL;
 
     llcp_fini ();
-    nfc_exit(NULL);
+    nfc_exit(context);
     exit(EXIT_SUCCESS);
 }
