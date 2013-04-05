@@ -47,7 +47,7 @@
 struct mac_link *mac_link;
 nfc_device *device;
 
-void
+static void
 stop_mac_link (int sig)
 {
     (void) sig;
@@ -56,14 +56,14 @@ stop_mac_link (int sig)
 	nfc_abort_command (mac_link->device);
 }
 
-void
+static void
 bye (void)
 {
     if (device)
 	nfc_close (device);
 }
 
-size_t
+static size_t
 shexdump (char * dest, const uint8_t * buf, const size_t size)
 {
     size_t res = 0;
@@ -77,7 +77,7 @@ shexdump (char * dest, const uint8_t * buf, const size_t size)
 FILE* info_stream = NULL;
 FILE* ndef_stream = NULL;
 
-void *
+static void *
 com_android_npp_thread (void *arg)
 {
     struct llc_connection *connection = (struct llc_connection *) arg;
@@ -133,7 +133,7 @@ com_android_npp_thread (void *arg)
     return NULL;
 }
 
-void
+static void
 print_usage(char *progname)
 {
     fprintf (stderr, "usage: %s -o FILE\n", progname);
