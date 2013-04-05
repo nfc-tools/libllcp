@@ -461,10 +461,12 @@ pdu_receive(struct mac_link *link, void *buf, size_t nbytes)
 void
 mac_link_free(struct mac_link *mac_link)
 {
-  if (mac_link->exchange_pdus_thread)
-    free(mac_link->exchange_pdus_thread);
+  if (mac_link) {
+    if (mac_link->exchange_pdus_thread)
+      free(mac_link->exchange_pdus_thread);
 
-  if (mac_link && mac_link->llc_link)
-    mac_link->llc_link->mac_link = NULL;
-  free(mac_link);
+    if (mac_link->llc_link)
+      mac_link->llc_link->mac_link = NULL;
+    free(mac_link);
+  }
 }
