@@ -42,77 +42,75 @@
 #define LLC_SERVICE_LOG(priority, format, ...) llcp_log_log (LOG_LLC_SERVICE, priority, format, __VA_ARGS__)
 
 struct llc_service *
-llc_service_new (void *(*accept_routine)(void *), void *(*thread_routine)(void *), void *user_data)
-{
-    return llc_service_new_with_uri (accept_routine, thread_routine, NULL, user_data);
+llc_service_new(void * (*accept_routine)(void *), void * (*thread_routine)(void *), void *user_data) {
+  return llc_service_new_with_uri(accept_routine, thread_routine, NULL, user_data);
 }
 
 struct llc_service *
-llc_service_new_with_uri (void *(*accept_routine)(void *), void *(*thread_routine)(void *), char *uri, void *user_data)
-{
-    assert (thread_routine);
+llc_service_new_with_uri(void * (*accept_routine)(void *), void * (*thread_routine)(void *), char *uri, void *user_data) {
+  assert(thread_routine);
 
-    struct llc_service *service;
+  struct llc_service *service;
 
-    if ((service = malloc (sizeof (*service)))) {
+  if ((service = malloc(sizeof(*service)))) {
 
-	service->uri = (uri) ? strdup (uri) : NULL;
+    service->uri = (uri) ? strdup(uri) : NULL;
 
-	service->accept_routine = accept_routine;
-	service->thread_routine = thread_routine;
-	service->miu = LLCP_DEFAULT_MIU;
-	service->user_data = user_data;
-    }
+    service->accept_routine = accept_routine;
+    service->thread_routine = thread_routine;
+    service->miu = LLCP_DEFAULT_MIU;
+    service->user_data = user_data;
+  }
 
-    return service;
+  return service;
 }
 
 uint16_t
-llc_service_get_miu (const struct llc_service *service)
+llc_service_get_miu(const struct llc_service *service)
 {
-    assert (service);
-    return service->miu;
+  assert(service);
+  return service->miu;
 }
 
 void
-llc_service_set_miu (struct llc_service *service, uint16_t miu)
+llc_service_set_miu(struct llc_service *service, uint16_t miu)
 {
-    assert (service);
-    assert (((miu - 128) & 0xfc00) == 0x0000);
-    service->miu = miu;
+  assert(service);
+  assert(((miu - 128) & 0xfc00) == 0x0000);
+  service->miu = miu;
 }
 
 uint8_t
-llc_service_get_rw (const struct llc_service *service)
+llc_service_get_rw(const struct llc_service *service)
 {
-    return service->rw;
+  return service->rw;
 }
 
 void
-llc_service_set_rw (struct llc_service *service, uint8_t rw)
+llc_service_set_rw(struct llc_service *service, uint8_t rw)
 {
-    service->rw = rw;
+  service->rw = rw;
 }
 
 const char *
-llc_service_get_uri (const struct llc_service *service)
+llc_service_get_uri(const struct llc_service *service)
 {
-    return service->uri;
+  return service->uri;
 }
 
 const char *
-llc_service_set_uri (struct llc_service *service, const char *uri)
+llc_service_set_uri(struct llc_service *service, const char *uri)
 {
-    assert (service);
-    free (service->uri);
-    return service->uri = (uri) ? strdup (uri) : NULL;
+  assert(service);
+  free(service->uri);
+  return service->uri = (uri) ? strdup(uri) : NULL;
 }
 
 void
-llc_service_free (struct llc_service *service)
+llc_service_free(struct llc_service *service)
 {
-    assert (service);
+  assert(service);
 
-    free (service->uri);
-    free (service);
+  free(service->uri);
+  free(service);
 }

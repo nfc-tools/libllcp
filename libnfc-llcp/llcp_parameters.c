@@ -45,396 +45,396 @@
  */
 
 int
-parameter_encode_version (uint8_t buffer[], size_t buffer_len,
-		    struct llcp_version version)
+parameter_encode_version(uint8_t buffer[], size_t buffer_len,
+                         struct llcp_version version)
 {
-    if (buffer_len < 3) {
-	LLC_TLV_MSG (LLC_PRIORITY_ERROR, "Insuficient buffer space");
-	return -1;
-    }
+  if (buffer_len < 3) {
+    LLC_TLV_MSG(LLC_PRIORITY_ERROR, "Insuficient buffer space");
+    return -1;
+  }
 
-    buffer[0] = LLCP_PARAMETER_VERSION;
-    buffer[1] = 0x01;
-    buffer[2] = ((version.major & 0x0F) << 4) | (version.minor & 0x0F);
-    return 3;
+  buffer[0] = LLCP_PARAMETER_VERSION;
+  buffer[1] = 0x01;
+  buffer[2] = ((version.major & 0x0F) << 4) | (version.minor & 0x0F);
+  return 3;
 }
 
 int
-parameter_decode_version (const uint8_t buffer[], size_t buffer_len,
-		    struct llcp_version *version)
+parameter_decode_version(const uint8_t buffer[], size_t buffer_len,
+                         struct llcp_version *version)
 {
-    if (buffer_len != 3) {
-	LLC_TLV_MSG (LLC_PRIORITY_ERROR, "Invalid TLV field length");
-	return -1;
-    }
-    if (!version) {
-	LLC_TLV_MSG (LLC_PRIORITY_ERROR, "NULL version argument");
-	return -1;
-    }
-    if ((buffer[0] != LLCP_PARAMETER_VERSION) ||
-	(buffer[1] != 0x01)) {
-	LLC_TLV_MSG (LLC_PRIORITY_ERROR, "Invalid TLV header");
-	return -1;
-    }
+  if (buffer_len != 3) {
+    LLC_TLV_MSG(LLC_PRIORITY_ERROR, "Invalid TLV field length");
+    return -1;
+  }
+  if (!version) {
+    LLC_TLV_MSG(LLC_PRIORITY_ERROR, "NULL version argument");
+    return -1;
+  }
+  if ((buffer[0] != LLCP_PARAMETER_VERSION) ||
+      (buffer[1] != 0x01)) {
+    LLC_TLV_MSG(LLC_PRIORITY_ERROR, "Invalid TLV header");
+    return -1;
+  }
 
-    version->major = buffer[2] >> 4;
-    version->minor = buffer[2] & 0x0F;
+  version->major = buffer[2] >> 4;
+  version->minor = buffer[2] & 0x0F;
 
-    return 0;
+  return 0;
 }
 
 int
-parameter_encode_miux (uint8_t buffer[], size_t buffer_len, uint16_t miux)
+parameter_encode_miux(uint8_t buffer[], size_t buffer_len, uint16_t miux)
 {
-    if (buffer_len < 4) {
-	LLC_TLV_MSG (LLC_PRIORITY_ERROR, "Insuficient buffer space");
-	return -1;
-    }
-    if (miux > 0x07FF) {
-	LLC_TLV_MSG (LLC_PRIORITY_ERROR, "Invalid MIUX value");
-	return -1;
-    }
+  if (buffer_len < 4) {
+    LLC_TLV_MSG(LLC_PRIORITY_ERROR, "Insuficient buffer space");
+    return -1;
+  }
+  if (miux > 0x07FF) {
+    LLC_TLV_MSG(LLC_PRIORITY_ERROR, "Invalid MIUX value");
+    return -1;
+  }
 
-    buffer[0] = LLCP_PARAMETER_MIUX;
-    buffer[1] = 0x02;
-    buffer[2] = miux >> 8;
-    buffer[3] = miux;
+  buffer[0] = LLCP_PARAMETER_MIUX;
+  buffer[1] = 0x02;
+  buffer[2] = miux >> 8;
+  buffer[3] = miux;
 
-    return 4;
+  return 4;
 }
 
 int
-parameter_decode_miux (const uint8_t buffer[], size_t buffer_len, uint16_t *miux)
+parameter_decode_miux(const uint8_t buffer[], size_t buffer_len, uint16_t *miux)
 {
-    if (buffer_len != 4) {
-	LLC_TLV_MSG (LLC_PRIORITY_ERROR, "Invalid TLV field length");
-	return -1;
-    }
-    if (!miux) {
-	LLC_TLV_MSG (LLC_PRIORITY_ERROR, "NULL miux argument");
-	return -1;
-    }
-    if ((buffer[0] != LLCP_PARAMETER_MIUX) ||
-	(buffer[1] != 0x02)) {
-	LLC_TLV_MSG (LLC_PRIORITY_ERROR, "Invalid TLV header");
-	return -1;
-    }
+  if (buffer_len != 4) {
+    LLC_TLV_MSG(LLC_PRIORITY_ERROR, "Invalid TLV field length");
+    return -1;
+  }
+  if (!miux) {
+    LLC_TLV_MSG(LLC_PRIORITY_ERROR, "NULL miux argument");
+    return -1;
+  }
+  if ((buffer[0] != LLCP_PARAMETER_MIUX) ||
+      (buffer[1] != 0x02)) {
+    LLC_TLV_MSG(LLC_PRIORITY_ERROR, "Invalid TLV header");
+    return -1;
+  }
 
-    *miux = (buffer[2] << 8 | buffer[3]) & 0x07FF;
+  *miux = (buffer[2] << 8 | buffer[3]) & 0x07FF;
 
-    return 0;
+  return 0;
 }
 
 int
-parameter_encode_wks (uint8_t buffer[], size_t buffer_len, uint16_t wks)
+parameter_encode_wks(uint8_t buffer[], size_t buffer_len, uint16_t wks)
 {
-    if (buffer_len < 4) {
-	LLC_TLV_MSG (LLC_PRIORITY_ERROR, "Insuficient buffer space");
-	return -1;
-    }
+  if (buffer_len < 4) {
+    LLC_TLV_MSG(LLC_PRIORITY_ERROR, "Insuficient buffer space");
+    return -1;
+  }
 
-    wks |= 0x01;
+  wks |= 0x01;
 
-    buffer[0] = LLCP_PARAMETER_WKS;
-    buffer[1] = 0x02;
-    buffer[2] = wks >> 8;
-    buffer[3] = wks;
+  buffer[0] = LLCP_PARAMETER_WKS;
+  buffer[1] = 0x02;
+  buffer[2] = wks >> 8;
+  buffer[3] = wks;
 
-    return 4;
+  return 4;
 }
 
 int
-parameter_decode_wks (const uint8_t buffer[], size_t buffer_len, uint16_t *wks)
+parameter_decode_wks(const uint8_t buffer[], size_t buffer_len, uint16_t *wks)
 {
-    if (buffer_len != 4) {
-	LLC_TLV_MSG (LLC_PRIORITY_ERROR, "Invalid TLV field length");
-	return -1;
-    }
-    if (!wks) {
-	LLC_TLV_MSG (LLC_PRIORITY_ERROR, "NULL wks argument");
-	return -1;
-    }
-    if ((buffer[0] != LLCP_PARAMETER_WKS) ||
-	(buffer[1] != 0x02)) {
-	LLC_TLV_MSG (LLC_PRIORITY_ERROR, "Invalid TLV header");
-	return -1;
-    }
+  if (buffer_len != 4) {
+    LLC_TLV_MSG(LLC_PRIORITY_ERROR, "Invalid TLV field length");
+    return -1;
+  }
+  if (!wks) {
+    LLC_TLV_MSG(LLC_PRIORITY_ERROR, "NULL wks argument");
+    return -1;
+  }
+  if ((buffer[0] != LLCP_PARAMETER_WKS) ||
+      (buffer[1] != 0x02)) {
+    LLC_TLV_MSG(LLC_PRIORITY_ERROR, "Invalid TLV header");
+    return -1;
+  }
 
-    *wks = buffer[2] << 8 | buffer[3];
+  *wks = buffer[2] << 8 | buffer[3];
 
-    *wks |= 0x01;
+  *wks |= 0x01;
 
-    return 0;
+  return 0;
 }
 
 int
-parameter_encode_lto (uint8_t buffer[], size_t buffer_len, uint8_t lto)
+parameter_encode_lto(uint8_t buffer[], size_t buffer_len, uint8_t lto)
 {
-    if (buffer_len < 3) {
-	LLC_TLV_MSG (LLC_PRIORITY_ERROR, "Insuficient buffer space");
-	return -1;
-    }
+  if (buffer_len < 3) {
+    LLC_TLV_MSG(LLC_PRIORITY_ERROR, "Insuficient buffer space");
+    return -1;
+  }
 
-    buffer[0] = LLCP_PARAMETER_LTO;
-    buffer[1] = 0x01;
-    buffer[2] = lto;
+  buffer[0] = LLCP_PARAMETER_LTO;
+  buffer[1] = 0x01;
+  buffer[2] = lto;
 
-    return 3;
+  return 3;
 }
 
 int
-parameter_decode_lto (const uint8_t buffer[], size_t buffer_len, uint8_t *lto)
+parameter_decode_lto(const uint8_t buffer[], size_t buffer_len, uint8_t *lto)
 {
-    if (buffer_len != 3) {
-	LLC_TLV_MSG (LLC_PRIORITY_ERROR, "Invalid TLV field length");
-	return -1;
-    }
-    if (!lto) {
-	LLC_TLV_MSG (LLC_PRIORITY_ERROR, "NULL lto argument");
-	return -1;
-    }
-    if ((buffer[0] != LLCP_PARAMETER_LTO) ||
-	(buffer[1] != 0x01)) {
-	LLC_TLV_MSG (LLC_PRIORITY_ERROR, "Invalid TLV header");
-	return -1;
-    }
+  if (buffer_len != 3) {
+    LLC_TLV_MSG(LLC_PRIORITY_ERROR, "Invalid TLV field length");
+    return -1;
+  }
+  if (!lto) {
+    LLC_TLV_MSG(LLC_PRIORITY_ERROR, "NULL lto argument");
+    return -1;
+  }
+  if ((buffer[0] != LLCP_PARAMETER_LTO) ||
+      (buffer[1] != 0x01)) {
+    LLC_TLV_MSG(LLC_PRIORITY_ERROR, "Invalid TLV header");
+    return -1;
+  }
 
-    *lto = buffer[2];
+  *lto = buffer[2];
 
-    return 0;
+  return 0;
 }
 
 int
-parameter_encode_rw (uint8_t buffer[], size_t buffer_len, uint8_t rw)
+parameter_encode_rw(uint8_t buffer[], size_t buffer_len, uint8_t rw)
 {
-    if (buffer_len < 3) {
-	LLC_TLV_MSG (LLC_PRIORITY_ERROR, "Insuficient buffer space");
-	return -1;
-    }
-    if (rw > 0x0F) {
-	LLC_TLV_MSG (LLC_PRIORITY_ERROR, "Invalid RW value");
-	return -1;
-    }
+  if (buffer_len < 3) {
+    LLC_TLV_MSG(LLC_PRIORITY_ERROR, "Insuficient buffer space");
+    return -1;
+  }
+  if (rw > 0x0F) {
+    LLC_TLV_MSG(LLC_PRIORITY_ERROR, "Invalid RW value");
+    return -1;
+  }
 
-    buffer[0] = LLCP_PARAMETER_RW;
-    buffer[1] = 0x01;
-    buffer[2] = rw;
+  buffer[0] = LLCP_PARAMETER_RW;
+  buffer[1] = 0x01;
+  buffer[2] = rw;
 
-    return 3;
+  return 3;
 }
 
 int
-parameter_decode_rw (const uint8_t buffer[], size_t buffer_len, uint8_t *rw)
+parameter_decode_rw(const uint8_t buffer[], size_t buffer_len, uint8_t *rw)
 {
-    if (buffer_len != 3) {
-	LLC_TLV_MSG (LLC_PRIORITY_ERROR, "Invalid TLV field length");
-	return -1;
-    }
-    if (!rw) {
-	LLC_TLV_MSG (LLC_PRIORITY_ERROR, "NULL rw argument");
-	return -1;
-    }
-    if ((buffer[0] != LLCP_PARAMETER_RW) ||
-	(buffer[1] != 0x01)) {
-	LLC_TLV_MSG (LLC_PRIORITY_ERROR, "Invalid TLV header");
-	return -1;
-    }
+  if (buffer_len != 3) {
+    LLC_TLV_MSG(LLC_PRIORITY_ERROR, "Invalid TLV field length");
+    return -1;
+  }
+  if (!rw) {
+    LLC_TLV_MSG(LLC_PRIORITY_ERROR, "NULL rw argument");
+    return -1;
+  }
+  if ((buffer[0] != LLCP_PARAMETER_RW) ||
+      (buffer[1] != 0x01)) {
+    LLC_TLV_MSG(LLC_PRIORITY_ERROR, "Invalid TLV header");
+    return -1;
+  }
 
-    *rw = buffer[2];
+  *rw = buffer[2];
 
-    return 0;
+  return 0;
 }
 
 int
-parameter_encode_sn (uint8_t buffer[], size_t buffer_len, const char *sn)
+parameter_encode_sn(uint8_t buffer[], size_t buffer_len, const char *sn)
 {
-    size_t sn_len = strlen (sn);
-    if (buffer_len < 2 + sn_len) {
-	LLC_TLV_MSG (LLC_PRIORITY_ERROR, "Insuficient buffer space");
-	return -1;
-    }
-    if (sn_len > UINT8_MAX) {
-	LLC_TLV_MSG (LLC_PRIORITY_ERROR, "SN too long");
-	return -1;
-    }
+  size_t sn_len = strlen(sn);
+  if (buffer_len < 2 + sn_len) {
+    LLC_TLV_MSG(LLC_PRIORITY_ERROR, "Insuficient buffer space");
+    return -1;
+  }
+  if (sn_len > UINT8_MAX) {
+    LLC_TLV_MSG(LLC_PRIORITY_ERROR, "SN too long");
+    return -1;
+  }
 
-    buffer[0] = LLCP_PARAMETER_SN;
-    buffer[1] = sn_len;
-    memcpy (buffer + 2, sn, sn_len);
+  buffer[0] = LLCP_PARAMETER_SN;
+  buffer[1] = sn_len;
+  memcpy(buffer + 2, sn, sn_len);
 
-    return 2 + sn_len;
+  return 2 + sn_len;
 }
 
 int
-parameter_decode_sn (const uint8_t buffer[], size_t buffer_len, char *sn,
-		     size_t sn_max_len)
+parameter_decode_sn(const uint8_t buffer[], size_t buffer_len, char *sn,
+                    size_t sn_max_len)
 {
-    if (buffer_len < 2) {
-	LLC_TLV_MSG (LLC_PRIORITY_ERROR, "Invalid TLV field length");
-	return -1;
-    }
-    if (!sn) {
-	LLC_TLV_MSG (LLC_PRIORITY_ERROR, "NULL sn argument");
-	return -1;
-    }
-    if (buffer[0] != LLCP_PARAMETER_SN) {
-	LLC_TLV_MSG (LLC_PRIORITY_ERROR, "Invalid TLV header");
-	return -1;
-    }
-    if (buffer_len != 2u + buffer[1]) {
-	LLC_TLV_MSG (LLC_PRIORITY_ERROR, "Invalid TLV header");
-	return -1;
-    }
-    if (sn_max_len < buffer[1] + 1u) {
-	LLC_TLV_MSG (LLC_PRIORITY_ERROR, "Insuficient buffer space");
-	return -1;
-    }
+  if (buffer_len < 2) {
+    LLC_TLV_MSG(LLC_PRIORITY_ERROR, "Invalid TLV field length");
+    return -1;
+  }
+  if (!sn) {
+    LLC_TLV_MSG(LLC_PRIORITY_ERROR, "NULL sn argument");
+    return -1;
+  }
+  if (buffer[0] != LLCP_PARAMETER_SN) {
+    LLC_TLV_MSG(LLC_PRIORITY_ERROR, "Invalid TLV header");
+    return -1;
+  }
+  if (buffer_len != 2u + buffer[1]) {
+    LLC_TLV_MSG(LLC_PRIORITY_ERROR, "Invalid TLV header");
+    return -1;
+  }
+  if (sn_max_len < buffer[1] + 1u) {
+    LLC_TLV_MSG(LLC_PRIORITY_ERROR, "Insuficient buffer space");
+    return -1;
+  }
 
-    memcpy (sn, buffer + 2, buffer[1]);
-    sn[buffer[1]] = '\0';
+  memcpy(sn, buffer + 2, buffer[1]);
+  sn[buffer[1]] = '\0';
 
-    return 0;
+  return 0;
 }
 
 int
-parameter_encode_opt (uint8_t buffer[], size_t buffer_len, uint8_t opt)
+parameter_encode_opt(uint8_t buffer[], size_t buffer_len, uint8_t opt)
 {
-    if (buffer_len < 3) {
-	LLC_TLV_MSG (LLC_PRIORITY_ERROR, "Insuficient buffer space");
-	return -1;
-    }
-    if (opt > 0x03) {
-	LLC_TLV_MSG (LLC_PRIORITY_ERROR, "Invalid OPT value");
-	return -1;
-    }
+  if (buffer_len < 3) {
+    LLC_TLV_MSG(LLC_PRIORITY_ERROR, "Insuficient buffer space");
+    return -1;
+  }
+  if (opt > 0x03) {
+    LLC_TLV_MSG(LLC_PRIORITY_ERROR, "Invalid OPT value");
+    return -1;
+  }
 
-    buffer[0] = LLCP_PARAMETER_OPT;
-    buffer[1] = 0x01;
-    buffer[2] = opt;
+  buffer[0] = LLCP_PARAMETER_OPT;
+  buffer[1] = 0x01;
+  buffer[2] = opt;
 
-    return 3;
+  return 3;
 }
 
 int
-parameter_decode_opt (const uint8_t buffer[], size_t buffer_len, uint8_t *opt)
+parameter_decode_opt(const uint8_t buffer[], size_t buffer_len, uint8_t *opt)
 {
-    if (buffer_len != 3) {
-	LLC_TLV_MSG (LLC_PRIORITY_ERROR, "Invalid TLV field length");
-	return -1;
-    }
-    if (!opt) {
-	LLC_TLV_MSG (LLC_PRIORITY_ERROR, "NULL opt argument");
-	return -1;
-    }
-    if ((buffer[0] != LLCP_PARAMETER_OPT) ||
-	(buffer[1] != 0x01)) {
-	LLC_TLV_MSG (LLC_PRIORITY_ERROR, "Invalid TLV header");
-	return -1;
-    }
+  if (buffer_len != 3) {
+    LLC_TLV_MSG(LLC_PRIORITY_ERROR, "Invalid TLV field length");
+    return -1;
+  }
+  if (!opt) {
+    LLC_TLV_MSG(LLC_PRIORITY_ERROR, "NULL opt argument");
+    return -1;
+  }
+  if ((buffer[0] != LLCP_PARAMETER_OPT) ||
+      (buffer[1] != 0x01)) {
+    LLC_TLV_MSG(LLC_PRIORITY_ERROR, "Invalid TLV header");
+    return -1;
+  }
 
-    *opt = buffer[2];
+  *opt = buffer[2];
 
-    return 0;
+  return 0;
 }
 
 int
-parameter_encode_sdreq (uint8_t buffer[], size_t buffer_len, uint8_t tid, const char *uri)
+parameter_encode_sdreq(uint8_t buffer[], size_t buffer_len, uint8_t tid, const char *uri)
 {
-    if (!uri) {
-	LLC_TLV_MSG (LLC_PRIORITY_ERROR, "NULL uri argument");
-	return -1;
-    }
+  if (!uri) {
+    LLC_TLV_MSG(LLC_PRIORITY_ERROR, "NULL uri argument");
+    return -1;
+  }
 
-    size_t uri_len = strlen (uri);
+  size_t uri_len = strlen(uri);
 
-    if (buffer_len < 3 + uri_len) {
-	LLC_TLV_MSG (LLC_PRIORITY_ERROR, "Insuficient buffer space");
-	return -1;
-    }
-    if (!uri) {
-	LLC_TLV_MSG (LLC_PRIORITY_ERROR, "NULL uri argument");
-	return -1;
-    }
+  if (buffer_len < 3 + uri_len) {
+    LLC_TLV_MSG(LLC_PRIORITY_ERROR, "Insuficient buffer space");
+    return -1;
+  }
+  if (!uri) {
+    LLC_TLV_MSG(LLC_PRIORITY_ERROR, "NULL uri argument");
+    return -1;
+  }
 
-    buffer[0] = LLCP_PARAMETER_SDREQ;
-    buffer[1] = 1 + uri_len;
-    buffer[2] = tid;
-    memcpy (buffer + 3, uri, uri_len);
+  buffer[0] = LLCP_PARAMETER_SDREQ;
+  buffer[1] = 1 + uri_len;
+  buffer[2] = tid;
+  memcpy(buffer + 3, uri, uri_len);
 
-    return 3 + uri_len;
+  return 3 + uri_len;
 }
 
 
 int
-parameter_decode_sdreq (const uint8_t buffer[], size_t buffer_len, uint8_t *tid, char **uri)
+parameter_decode_sdreq(const uint8_t buffer[], size_t buffer_len, uint8_t *tid, char **uri)
 {
-    if (buffer_len < 4) {
-	LLC_TLV_MSG (LLC_PRIORITY_ERROR, "Invalid TLV field length");
-	return -1;
-    }
-    if (!tid) {
-	LLC_TLV_MSG (LLC_PRIORITY_ERROR, "NULL tid argument");
-	return -1;
-    }
-    if (!uri) {
-	LLC_TLV_MSG (LLC_PRIORITY_ERROR, "NULL uri argument");
-	return -1;
-    }
-    if ((buffer[0] != LLCP_PARAMETER_SDREQ) ||
-	(buffer_len != buffer[1] + 2u)) {
-	LLC_TLV_MSG (LLC_PRIORITY_ERROR, "Invalid TLV header");
-	return -1;
-    }
-    *tid = buffer[2];
-    if ((*uri = malloc (buffer[1] - 1))) {
-	memcpy (*uri, buffer + 3, buffer[1] - 1);
-	*(*uri + buffer[1] - 1) = '\0';
-    } else {
-	return -1;
-    }
+  if (buffer_len < 4) {
+    LLC_TLV_MSG(LLC_PRIORITY_ERROR, "Invalid TLV field length");
+    return -1;
+  }
+  if (!tid) {
+    LLC_TLV_MSG(LLC_PRIORITY_ERROR, "NULL tid argument");
+    return -1;
+  }
+  if (!uri) {
+    LLC_TLV_MSG(LLC_PRIORITY_ERROR, "NULL uri argument");
+    return -1;
+  }
+  if ((buffer[0] != LLCP_PARAMETER_SDREQ) ||
+      (buffer_len != buffer[1] + 2u)) {
+    LLC_TLV_MSG(LLC_PRIORITY_ERROR, "Invalid TLV header");
+    return -1;
+  }
+  *tid = buffer[2];
+  if ((*uri = malloc(buffer[1] - 1))) {
+    memcpy(*uri, buffer + 3, buffer[1] - 1);
+    *(*uri + buffer[1] - 1) = '\0';
+  } else {
+    return -1;
+  }
 
-    return 0;
+  return 0;
 }
 
 int
-parameter_encode_sdres (uint8_t buffer[], size_t buffer_len, uint8_t tid, uint8_t sap)
+parameter_encode_sdres(uint8_t buffer[], size_t buffer_len, uint8_t tid, uint8_t sap)
 {
-    if (buffer_len < 4) {
-	LLC_TLV_MSG (LLC_PRIORITY_ERROR, "Insuficient buffer space");
-	return -1;
-    }
+  if (buffer_len < 4) {
+    LLC_TLV_MSG(LLC_PRIORITY_ERROR, "Insuficient buffer space");
+    return -1;
+  }
 
-    buffer[0] = LLCP_PARAMETER_SDRES;
-    buffer[1] = 0x02;
-    buffer[2] = tid;
-    buffer[3] = sap;
+  buffer[0] = LLCP_PARAMETER_SDRES;
+  buffer[1] = 0x02;
+  buffer[2] = tid;
+  buffer[3] = sap;
 
-    return 4;
+  return 4;
 }
 
 int
-parameter_decode_sdres (const uint8_t buffer[], size_t buffer_len, uint8_t *tid, uint8_t *sap)
+parameter_decode_sdres(const uint8_t buffer[], size_t buffer_len, uint8_t *tid, uint8_t *sap)
 {
-    if (buffer_len != 4) {
-	LLC_TLV_MSG (LLC_PRIORITY_ERROR, "Invalid TLV field length");
-	return -1;
-    }
-    if (!tid) {
-	LLC_TLV_MSG (LLC_PRIORITY_ERROR, "NULL tid argument");
-	return -1;
-    }
-    if (!sap) {
-	LLC_TLV_MSG (LLC_PRIORITY_ERROR, "NULL sap argument");
-	return -1;
-    }
-    if ((buffer[0] != LLCP_PARAMETER_SDRES) ||
-	(buffer[1] != 0x02)) {
-	LLC_TLV_MSG (LLC_PRIORITY_ERROR, "Invalid TLV header");
-	return -1;
-    }
+  if (buffer_len != 4) {
+    LLC_TLV_MSG(LLC_PRIORITY_ERROR, "Invalid TLV field length");
+    return -1;
+  }
+  if (!tid) {
+    LLC_TLV_MSG(LLC_PRIORITY_ERROR, "NULL tid argument");
+    return -1;
+  }
+  if (!sap) {
+    LLC_TLV_MSG(LLC_PRIORITY_ERROR, "NULL sap argument");
+    return -1;
+  }
+  if ((buffer[0] != LLCP_PARAMETER_SDRES) ||
+      (buffer[1] != 0x02)) {
+    LLC_TLV_MSG(LLC_PRIORITY_ERROR, "Invalid TLV header");
+    return -1;
+  }
 
-    *tid = buffer[2];
-    *sap = buffer[3];
+  *tid = buffer[2];
+  *sap = buffer[3];
 
-    return 0;
+  return 0;
 }

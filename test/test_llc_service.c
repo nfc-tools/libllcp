@@ -26,63 +26,63 @@
 #include "llc_service.h"
 
 void *
-void_thread (void *arg)
+void_thread(void *arg)
 {
-    (void) arg;
-    return NULL;
+  (void) arg;
+  return NULL;
 }
 
 void
-cut_setup (void)
+cut_setup(void)
 {
-    void_thread (NULL);
+  void_thread(NULL);
 }
 
 void
-test_llc_service_uri (void)
+test_llc_service_uri(void)
 {
-    struct llc_service *service;
+  struct llc_service *service;
 
-    service = llc_service_new (NULL, void_thread, NULL);
-    cut_assert_not_null (service, cut_message ("llc_service_new()"));
+  service = llc_service_new(NULL, void_thread, NULL);
+  cut_assert_not_null(service, cut_message("llc_service_new()"));
 
-    const char *s;
-    s = llc_service_get_uri (service);
-    cut_assert_null (s, cut_message ("NULL URI expected"));
+  const char *s;
+  s = llc_service_get_uri(service);
+  cut_assert_null(s, cut_message("NULL URI expected"));
 
-    s = llc_service_set_uri (service, "urn:nfc:xsn:foo");
-    cut_assert_equal_string (s, "urn:nfc:xsn:foo", cut_message ("Wrong URI"));
+  s = llc_service_set_uri(service, "urn:nfc:xsn:foo");
+  cut_assert_equal_string(s, "urn:nfc:xsn:foo", cut_message("Wrong URI"));
 
-    llc_service_free (service);
+  llc_service_free(service);
 
-    service = llc_service_new_with_uri (NULL, void_thread, "urn:nfc:xsn:foo", NULL);
-    cut_assert_not_null (service, cut_message ("llc_service_new_with_uri()"));
+  service = llc_service_new_with_uri(NULL, void_thread, "urn:nfc:xsn:foo", NULL);
+  cut_assert_not_null(service, cut_message("llc_service_new_with_uri()"));
 
-    s = llc_service_get_uri (service);
-    cut_assert_equal_string (s, "urn:nfc:xsn:foo", cut_message ("Wrong URI"));
+  s = llc_service_get_uri(service);
+  cut_assert_equal_string(s, "urn:nfc:xsn:foo", cut_message("Wrong URI"));
 
-    s = llc_service_set_uri (service, "urn:nfc:xsn:bar");
-    cut_assert_equal_string (s, "urn:nfc:xsn:bar", cut_message ("Wrong URI"));
+  s = llc_service_set_uri(service, "urn:nfc:xsn:bar");
+  cut_assert_equal_string(s, "urn:nfc:xsn:bar", cut_message("Wrong URI"));
 
-    s = llc_service_set_uri (service, NULL);
-    cut_assert_null (s, cut_message ("NULL URI expected"));
+  s = llc_service_set_uri(service, NULL);
+  cut_assert_null(s, cut_message("NULL URI expected"));
 
-    llc_service_free (service);
+  llc_service_free(service);
 }
 
 void
-test_llc_service_miu (void)
+test_llc_service_miu(void)
 {
-    struct llc_service *service;
+  struct llc_service *service;
 
-    service = llc_service_new (NULL, void_thread, NULL);
-    cut_assert_not_null (service, cut_message ("llc_service_new()"));
+  service = llc_service_new(NULL, void_thread, NULL);
+  cut_assert_not_null(service, cut_message("llc_service_new()"));
 
-    int miu = llc_service_get_miu (service);
-    cut_assert_equal_int (128, miu, cut_message ("Wrong default MIU"));
+  int miu = llc_service_get_miu(service);
+  cut_assert_equal_int(128, miu, cut_message("Wrong default MIU"));
 
-    llc_service_set_miu (service, 1024);
+  llc_service_set_miu(service, 1024);
 
-    miu = llc_service_get_miu (service);
-    cut_assert_equal_int (1024, miu, cut_message ("MIU not changed"));
+  miu = llc_service_get_miu(service);
+  cut_assert_equal_int(1024, miu, cut_message("MIU not changed"));
 }

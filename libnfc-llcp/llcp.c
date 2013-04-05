@@ -43,87 +43,87 @@
 #define LLCP_LOG(priority, format, ...) llcp_log_log (LOG_LLCP, priority, format, __VA_ARGS__)
 
 void
-sigusr1_handler (int x)
+sigusr1_handler(int x)
 {
-    (void) x;
+  (void) x;
 }
 
 int
-llcp_init (void)
+llcp_init(void)
 {
-    struct sigaction sa;
-    sa.sa_handler = sigusr1_handler;
-    sa.sa_flags  = 0;
-    sigemptyset (&sa.sa_mask);
-    if (sigaction (SIGUSR1, &sa, NULL) < 0)
-	return -1;
+  struct sigaction sa;
+  sa.sa_handler = sigusr1_handler;
+  sa.sa_flags  = 0;
+  sigemptyset(&sa.sa_mask);
+  if (sigaction(SIGUSR1, &sa, NULL) < 0)
+    return -1;
 
-    return llcp_log_init ();
+  return llcp_log_init();
 }
 
 int
-llcp_fini (void)
+llcp_fini(void)
 {
-    return llcp_log_fini ();
+  return llcp_log_fini();
 }
 
 int
-llcp_version_agreement (struct llc_link *link, struct llcp_version version)
+llcp_version_agreement(struct llc_link *link, struct llcp_version version)
 {
-    int res = -1;
+  int res = -1;
 
-    if (link->version.major == version.major) {
-	link->version.minor = MIN (link->version.minor, version.minor);
-	res = 0;
-    } else if (link->version.major > version.major) {
-	if (version.major >= 1) {
-	    link->version = version;
-	    res = 0;
-	}
-    } else {
-	/* Let the remote LLC component perform version agreement */
-	res = 0;
+  if (link->version.major == version.major) {
+    link->version.minor = MIN(link->version.minor, version.minor);
+    res = 0;
+  } else if (link->version.major > version.major) {
+    if (version.major >= 1) {
+      link->version = version;
+      res = 0;
     }
+  } else {
+    /* Let the remote LLC component perform version agreement */
+    res = 0;
+  }
 
-    return res;
+  return res;
 }
 
 void
-llcp_threadslayer (pthread_t thread)
+llcp_threadslayer(pthread_t thread)
 {
-    pthread_cancel (thread);
+  pthread_cancel(thread);
 
-    /*
-     * Send a signal to the thread
-     *
-     * Thread cancellation is not handled by message queue functions so the
-     * only way to unlock a thread blocked on message operations is by
-     * sending a signal to it so that it gets a chance to see the
-     * cancelation state.  However, if send too early in the thread's life,
-     * the signal may be missed.  So loop on pthread_kill() until it fails.
-     *
-     * XXX This is a dirty hack.
-     */
-    struct timespec delay = {
-	.tv_sec  = 0,
-	.tv_nsec = 10000000,
-    };
-    while (0 == pthread_kill (thread, SIGUSR1)) {
-	nanosleep (&delay, NULL);
-    }
+  /*
+   * Send a signal to the thread
+   *
+   * Thread cancellation is not handled by message queue functions so the
+   * only way to unlock a thread blocked on message operations is by
+   * sending a signal to it so that it gets a chance to see the
+   * cancelation state.  However, if send too early in the thread's life,
+   * the signal may be missed.  So loop on pthread_kill() until it fails.
+   *
+   * XXX This is a dirty hack.
+   */
+  struct timespec delay = {
+    .tv_sec  = 0,
+    .tv_nsec = 10000000,
+  };
+  while (0 == pthread_kill(thread, SIGUSR1)) {
+    nanosleep(&delay, NULL);
+  }
 
-    pthread_join (thread, NULL);
+  pthread_join(thread, NULL);
 }
 
 int
-llcp_disconnect (struct llc_link *link)
+llcp_disconnect(struct llc_link *link)
 {
-    assert (link);
-    struct pdu *pdu = pdu_new (0, PDU_DISC, 0, 0, 0, NULL, 0);
-    int res = llc_link_send_pdu (link, pdu);
-    pdu_free (pdu);
+  assert(link);
+  struct pdu *pdu = pdu_new(0, PDU_DISC, 0, 0, 0, NULL, 0);
+  int res = llc_link_send_pdu(link, pdu);
+  pdu_free(pdu);
 
-    llc_link_deactivate (link);
+  llc_link_deactivate(link);
 
-    return res;
+  return res;
 }

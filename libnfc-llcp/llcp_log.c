@@ -28,43 +28,43 @@
 #include "llcp_log.h"
 
 int
-llcp_log_init (void)
+llcp_log_init(void)
 {
-    return 0;
+  return 0;
 }
 
 int
-llcp_log_fini (void)
+llcp_log_fini(void)
 {
-    return 0;
+  return 0;
 }
 
 void
-llcp_log_log (char *category, int priority, char *format, ...)
+llcp_log_log(char *category, int priority, char *format, ...)
 {
-    switch (priority) {
+  switch (priority) {
     case LLC_PRIORITY_FATAL:
-	printf ("\033[37;41;1m");
-	break;
+      printf("\033[37;41;1m");
+      break;
     case LLC_PRIORITY_ALERT:
     case LLC_PRIORITY_CRIT:
     case LLC_PRIORITY_ERROR:
-	printf ("\033[31;1m");
-	break;
+      printf("\033[31;1m");
+      break;
     case LLC_PRIORITY_WARN:
-	printf ("\033[33;1m");
-	break;
+      printf("\033[33;1m");
+      break;
     case LLC_PRIORITY_NOTICE:
-	printf ("\033[34;1m");
-	break;
+      printf("\033[34;1m");
+      break;
     default:
-	printf ("\033[32m");
-    }
-    va_list va;
-    va_start (va, format);
-    printf ("%s\t", category);
-    vprintf (format, va);
-    printf("[0m");
-    printf ("\n");
-    fflush (stdout);
+      printf("\033[32m");
+  }
+  va_list va;
+  va_start(va, format);
+  printf("%s\t", category);
+  vprintf(format, va);
+  printf("[0m");
+  printf("\n");
+  fflush(stdout);
 }

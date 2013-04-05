@@ -33,229 +33,229 @@
 struct llc_link *llc_link;
 
 void *
-void_thread (void *arg)
+void_thread(void *arg)
 {
-    struct llc_connection *connection = (struct llc_connection *) arg;
-    llc_connection_stop (connection);
-    return NULL;
+  struct llc_connection *connection = (struct llc_connection *) arg;
+  llc_connection_stop(connection);
+  return NULL;
 }
 
 void
-cut_setup (void)
+cut_setup(void)
 {
-    llcp_init ();
+  llcp_init();
 
-    llc_link = llc_link_new ();
-    cut_assert_not_null (llc_link, cut_message ("llc_link()"));
+  llc_link = llc_link_new();
+  cut_assert_not_null(llc_link, cut_message("llc_link()"));
 }
 
 void
-cut_teardown (void)
+cut_teardown(void)
 {
-    llc_link_free (llc_link);
+  llc_link_free(llc_link);
 
-    llcp_fini ();
+  llcp_fini();
 }
 
 void
-test_llc_data_link_connection_new (void)
+test_llc_data_link_connection_new(void)
 {
-    struct llc_connection *connection0;
-    struct llc_connection *connection1;
-    struct llc_connection *connection2;
-    int reason;
-    struct pdu *pdu;
-    struct llc_service *service;
+  struct llc_connection *connection0;
+  struct llc_connection *connection1;
+  struct llc_connection *connection2;
+  int reason;
+  struct pdu *pdu;
+  struct llc_service *service;
 
-    uint8_t connect_pdu[] = { 0x45, 0x20 };
+  uint8_t connect_pdu[] = { 0x45, 0x20 };
 
-    pdu = pdu_unpack (connect_pdu, sizeof (connect_pdu));
-    cut_assert_not_null (pdu, cut_message ("pdu_unpack"));
+  pdu = pdu_unpack(connect_pdu, sizeof(connect_pdu));
+  cut_assert_not_null(pdu, cut_message("pdu_unpack"));
 
-    connection0 = llc_data_link_connection_new (llc_link, pdu, &reason);
-    cut_assert_null (connection0, cut_message ("llc_data_link_connection_new"));
-    cut_assert_equal_int (2, reason, cut_message ("Wrong reason"));
+  connection0 = llc_data_link_connection_new(llc_link, pdu, &reason);
+  cut_assert_null(connection0, cut_message("llc_data_link_connection_new"));
+  cut_assert_equal_int(2, reason, cut_message("Wrong reason"));
 
-    service = llc_service_new (NULL, void_thread, NULL);
-    cut_assert_not_null (service, cut_message ("llc_service_new()"));
+  service = llc_service_new(NULL, void_thread, NULL);
+  cut_assert_not_null(service, cut_message("llc_service_new()"));
 
-    int sap;
-    sap = llc_link_service_bind (llc_link, service, 17);
-    cut_assert_not_equal_int (-1, sap, cut_message ("llc_link_service_bind"));
-    cut_assert_equal_int (17, sap, cut_message ("Wrong SAP"));
+  int sap;
+  sap = llc_link_service_bind(llc_link, service, 17);
+  cut_assert_not_equal_int(-1, sap, cut_message("llc_link_service_bind"));
+  cut_assert_equal_int(17, sap, cut_message("Wrong SAP"));
 
-    connection1 = llc_data_link_connection_new (llc_link, pdu, &reason);
-    cut_assert_not_null (connection1, cut_message ("llc_data_link_connection_new"));
-    cut_assert_equal_int (17, connection1->service_sap, cut_message ("Wrong SAP"));
-    cut_assert_equal_int (17, connection1->local_sap, cut_message ("Wrong DSAP"));
-    cut_assert_equal_int (32, connection1->remote_sap, cut_message ("Wrong SSAP"));
+  connection1 = llc_data_link_connection_new(llc_link, pdu, &reason);
+  cut_assert_not_null(connection1, cut_message("llc_data_link_connection_new"));
+  cut_assert_equal_int(17, connection1->service_sap, cut_message("Wrong SAP"));
+  cut_assert_equal_int(17, connection1->local_sap, cut_message("Wrong DSAP"));
+  cut_assert_equal_int(32, connection1->remote_sap, cut_message("Wrong SSAP"));
 
-    connection1->status = DLC_DISCONNECTED;
+  connection1->status = DLC_DISCONNECTED;
 
-    connection2 = llc_data_link_connection_new (llc_link, pdu, &reason);
-    cut_assert_not_null (connection2, cut_message ("llc_data_link_connection_new()"));
+  connection2 = llc_data_link_connection_new(llc_link, pdu, &reason);
+  cut_assert_not_null(connection2, cut_message("llc_data_link_connection_new()"));
 
-    cut_assert_equal_int (17, connection2->service_sap, cut_message ("Wrong SAP"));
-    cut_assert_equal_int (18, connection2->local_sap, cut_message ("Wrong DSAP"));
-    cut_assert_equal_int (32, connection2->remote_sap, cut_message ("Wrong SSAP"));
+  cut_assert_equal_int(17, connection2->service_sap, cut_message("Wrong SAP"));
+  cut_assert_equal_int(18, connection2->local_sap, cut_message("Wrong DSAP"));
+  cut_assert_equal_int(32, connection2->remote_sap, cut_message("Wrong SSAP"));
 
-    llc_link_service_unbind (llc_link, 17);
+  llc_link_service_unbind(llc_link, 17);
 
-    llc_service_free (service);
+  llc_service_free(service);
 
-    llc_connection_free (connection1);
-    llc_connection_free (connection2);
+  llc_connection_free(connection1);
+  llc_connection_free(connection2);
 
-    pdu_free (pdu);
+  pdu_free(pdu);
 }
 
 void
-test_llc_logical_data_link_new (void)
+test_llc_logical_data_link_new(void)
 {
-    struct llc_connection *connection0;
-    struct llc_connection *connection1;
-    struct llc_connection *connection2;
-    struct pdu *pdu;
-    struct llc_service *service;
+  struct llc_connection *connection0;
+  struct llc_connection *connection1;
+  struct llc_connection *connection2;
+  struct pdu *pdu;
+  struct llc_service *service;
 
-    uint8_t ui_pdu[] = { 0x80, 0xd8 };
+  uint8_t ui_pdu[] = { 0x80, 0xd8 };
 
-    pdu = pdu_unpack (ui_pdu, sizeof (ui_pdu));
-    cut_assert_not_null (pdu, cut_message ("pdu_unpack"));
+  pdu = pdu_unpack(ui_pdu, sizeof(ui_pdu));
+  cut_assert_not_null(pdu, cut_message("pdu_unpack"));
 
-    connection0 = llc_logical_data_link_new (llc_link, pdu);
-    cut_assert_null (connection0, cut_message ("llc_logical_data_link_new"));
+  connection0 = llc_logical_data_link_new(llc_link, pdu);
+  cut_assert_null(connection0, cut_message("llc_logical_data_link_new"));
 
-    service = llc_service_new (NULL, void_thread, NULL);
-    cut_assert_not_null (service, cut_message ("llc_service_new()"));
+  service = llc_service_new(NULL, void_thread, NULL);
+  cut_assert_not_null(service, cut_message("llc_service_new()"));
 
-    int sap;
-    sap = llc_link_service_bind (llc_link, service, 32);
-    cut_assert_not_equal_int (-1, sap, cut_message ("llc_link_service_bind"));
-    cut_assert_equal_int (32, sap, cut_message ("Wrong SAP"));
+  int sap;
+  sap = llc_link_service_bind(llc_link, service, 32);
+  cut_assert_not_equal_int(-1, sap, cut_message("llc_link_service_bind"));
+  cut_assert_equal_int(32, sap, cut_message("Wrong SAP"));
 
-    connection1 = llc_logical_data_link_new (llc_link, pdu);
-    cut_assert_not_null (connection1, cut_message ("llc_logical_data_link_new"));
+  connection1 = llc_logical_data_link_new(llc_link, pdu);
+  cut_assert_not_null(connection1, cut_message("llc_logical_data_link_new"));
 
-    cut_assert_equal_int (32, connection1->service_sap, cut_message ("Wrong SAP"));
-    cut_assert_equal_int (32, connection1->local_sap, cut_message ("Wrong DSAP"));
-    cut_assert_equal_int (24, connection1->remote_sap, cut_message ("Wrong SSAP"));
+  cut_assert_equal_int(32, connection1->service_sap, cut_message("Wrong SAP"));
+  cut_assert_equal_int(32, connection1->local_sap, cut_message("Wrong DSAP"));
+  cut_assert_equal_int(24, connection1->remote_sap, cut_message("Wrong SSAP"));
 
-    connection2 = llc_logical_data_link_new (llc_link, pdu);
-    cut_assert_not_null (connection2, cut_message ("llc_logical_data_link_new()"));
+  connection2 = llc_logical_data_link_new(llc_link, pdu);
+  cut_assert_not_null(connection2, cut_message("llc_logical_data_link_new()"));
 
-    cut_assert_equal_int (32, connection2->service_sap, cut_message ("Wrong SAP"));
-    cut_assert_equal_int (32, connection2->local_sap, cut_message ("Wrong DSAP"));
-    cut_assert_equal_int (24, connection2->remote_sap, cut_message ("Wrong SSAP"));
+  cut_assert_equal_int(32, connection2->service_sap, cut_message("Wrong SAP"));
+  cut_assert_equal_int(32, connection2->local_sap, cut_message("Wrong DSAP"));
+  cut_assert_equal_int(24, connection2->remote_sap, cut_message("Wrong SSAP"));
 
-    llc_link_service_unbind (llc_link, 32);
+  llc_link_service_unbind(llc_link, 32);
 
-    llc_service_free (service);
+  llc_service_free(service);
 
-    llc_connection_free (connection1);
-    llc_connection_free (connection2);
+  llc_connection_free(connection1);
+  llc_connection_free(connection2);
 
-    pdu_free (pdu);
+  pdu_free(pdu);
 }
 
 void *
-accept_thread (void *arg)
+accept_thread(void *arg)
 {
-    struct llc_connection *connection = (struct llc_connection *) arg;
+  struct llc_connection *connection = (struct llc_connection *) arg;
 
-    llc_connection_accept (connection);
-    return (NULL);
+  llc_connection_accept(connection);
+  return (NULL);
 }
 
 void *
-reject_thread (void *arg)
+reject_thread(void *arg)
 {
-    struct llc_connection *connection = (struct llc_connection *) arg;
+  struct llc_connection *connection = (struct llc_connection *) arg;
 
-    llc_connection_reject (connection);
-    return (NULL);
+  llc_connection_reject(connection);
+  return (NULL);
 }
 
 void
-test_llc_connection_accept (void)
+test_llc_connection_accept(void)
 {
-    cut_pend ("Needs update");
-    struct llc_service *service;
-    service = llc_service_new (accept_thread, void_thread, NULL);
-    cut_assert_not_null (service, cut_message ("llc_service_new()"));
+  cut_pend("Needs update");
+  struct llc_service *service;
+  service = llc_service_new(accept_thread, void_thread, NULL);
+  cut_assert_not_null(service, cut_message("llc_service_new()"));
 
-    int sap;
-    sap = llc_link_service_bind (llc_link, service, 17);
-    cut_assert_not_equal_int (-1, sap, cut_message ("llc_link_service_bind"));
-    cut_assert_equal_int (17, sap, cut_message ("Wrong SAP"));
+  int sap;
+  sap = llc_link_service_bind(llc_link, service, 17);
+  cut_assert_not_equal_int(-1, sap, cut_message("llc_link_service_bind"));
+  cut_assert_equal_int(17, sap, cut_message("Wrong SAP"));
 
-    int res = llc_link_activate (llc_link, 0, NULL, 0);
-    cut_assert_equal_int (0, res, cut_message ("llc_link_activate()"));
+  int res = llc_link_activate(llc_link, 0, NULL, 0);
+  cut_assert_equal_int(0, res, cut_message("llc_link_activate()"));
 
-    char buffer[1024] = { 0x45, 0x20 };
-    res = mq_send (llc_link->llc_up, buffer, 2, 0);
-    cut_assert_not_equal_int (-1, res, cut_message ("mq_send()"));
+  char buffer[1024] = { 0x45, 0x20 };
+  res = mq_send(llc_link->llc_up, buffer, 2, 0);
+  cut_assert_not_equal_int(-1, res, cut_message("mq_send()"));
 
-    for (;;) {
-	res = mq_receive (llc_link->llc_down, buffer, sizeof (buffer), NULL);
-	cut_assert_not_equal_int (-1, res, cut_message ("mq_receive()"));
-	cut_assert_equal_int (2, res, cut_message ("Unexpected message length"));
+  for (;;) {
+    res = mq_receive(llc_link->llc_down, buffer, sizeof(buffer), NULL);
+    cut_assert_not_equal_int(-1, res, cut_message("mq_receive()"));
+    cut_assert_equal_int(2, res, cut_message("Unexpected message length"));
 
-	if (buffer[0] || buffer[1])
-	    break;
+    if (buffer[0] || buffer[1])
+      break;
 
-	res = mq_send (llc_link->llc_up, buffer, res, 0);
-	cut_assert_not_equal_int (-1, res, cut_message ("mq_send()"));
-    }
+    res = mq_send(llc_link->llc_up, buffer, res, 0);
+    cut_assert_not_equal_int(-1, res, cut_message("mq_send()"));
+  }
 
-    uint8_t expected_response[] = { 0x81, 0x91 };
-    cut_assert_equal_memory (buffer, res, expected_response, sizeof (expected_response), cut_message ("Invalid response"));
+  uint8_t expected_response[] = { 0x81, 0x91 };
+  cut_assert_equal_memory(buffer, res, expected_response, sizeof(expected_response), cut_message("Invalid response"));
 
-    llc_link_deactivate (llc_link);
-    llc_link_service_unbind (llc_link, sap);
+  llc_link_deactivate(llc_link);
+  llc_link_service_unbind(llc_link, sap);
 
-    llc_service_free (service);
+  llc_service_free(service);
 }
 
 void
-test_llc_connection_reject (void)
+test_llc_connection_reject(void)
 {
-    cut_pend ("Needs update");
+  cut_pend("Needs update");
 
-    struct llc_service *service;
-    service = llc_service_new (reject_thread, void_thread, NULL);
-    cut_assert_not_null (service, cut_message ("llc_service_new()"));
+  struct llc_service *service;
+  service = llc_service_new(reject_thread, void_thread, NULL);
+  cut_assert_not_null(service, cut_message("llc_service_new()"));
 
-    int sap;
-    sap = llc_link_service_bind (llc_link, service, 17);
-    cut_assert_not_equal_int (-1, sap, cut_message ("llc_link_service_bind"));
-    cut_assert_equal_int (17, sap, cut_message ("Wrong SAP"));
+  int sap;
+  sap = llc_link_service_bind(llc_link, service, 17);
+  cut_assert_not_equal_int(-1, sap, cut_message("llc_link_service_bind"));
+  cut_assert_equal_int(17, sap, cut_message("Wrong SAP"));
 
-    int res = llc_link_activate (llc_link, 0, NULL, 0);
-    cut_assert_equal_int (0, res, cut_message ("llc_link_activate()"));
+  int res = llc_link_activate(llc_link, 0, NULL, 0);
+  cut_assert_equal_int(0, res, cut_message("llc_link_activate()"));
 
-    char buffer[1024] = { 0x45, 0x20 };
-    res = mq_send (llc_link->llc_up, buffer, 2, 0);
-    cut_assert_not_equal_int (-1, res, cut_message ("mq_send()"));
+  char buffer[1024] = { 0x45, 0x20 };
+  res = mq_send(llc_link->llc_up, buffer, 2, 0);
+  cut_assert_not_equal_int(-1, res, cut_message("mq_send()"));
 
-    for (;;) {
-	res = mq_receive (llc_link->llc_down, buffer, sizeof (buffer), NULL);
-	cut_assert_not_equal_int (-1, res, cut_message ("mq_receive()"));
-	if (res == 3)
-	    break;
+  for (;;) {
+    res = mq_receive(llc_link->llc_down, buffer, sizeof(buffer), NULL);
+    cut_assert_not_equal_int(-1, res, cut_message("mq_receive()"));
+    if (res == 3)
+      break;
 
-	uint8_t symm_pdu[] = { 0x00, 0x00 };
-	cut_assert_equal_memory (buffer, res, symm_pdu, sizeof (symm_pdu), cut_message ("Unexpected message"));
+    uint8_t symm_pdu[] = { 0x00, 0x00 };
+    cut_assert_equal_memory(buffer, res, symm_pdu, sizeof(symm_pdu), cut_message("Unexpected message"));
 
-	res = mq_send (llc_link->llc_up, buffer, res, 0);
-	cut_assert_not_equal_int (-1, res, cut_message ("mq_send()"));
-    }
+    res = mq_send(llc_link->llc_up, buffer, res, 0);
+    cut_assert_not_equal_int(-1, res, cut_message("mq_send()"));
+  }
 
-    uint8_t expected_response[] = { 0x81, 0xd1, 0x03 };
-    cut_assert_equal_memory (buffer, res, expected_response, sizeof (expected_response), cut_message ("Invalid response"));
+  uint8_t expected_response[] = { 0x81, 0xd1, 0x03 };
+  cut_assert_equal_memory(buffer, res, expected_response, sizeof(expected_response), cut_message("Invalid response"));
 
-    llc_link_deactivate (llc_link);
-    llc_link_service_unbind (llc_link, sap);
+  llc_link_deactivate(llc_link);
+  llc_link_service_unbind(llc_link, sap);
 
-    llc_service_free (service);
+  llc_service_free(service);
 }

@@ -26,23 +26,23 @@
 #include <stdint.h>
 
 struct llc_service {
-    char *uri;
-    void *(*accept_routine)(void *);
-    void *(*thread_routine)(void *);
-    int8_t sap;
-    uint8_t rw;
-    uint16_t miu;
-    void *user_data;
+  char *uri;
+  void *(*accept_routine)(void *);
+  void *(*thread_routine)(void *);
+  int8_t sap;
+  uint8_t rw;
+  uint16_t miu;
+  void *user_data;
 };
 
-struct llc_service *llc_service_new (void *(*accept_routine)(void *), void *(*thread_routine)(void *), void *user_data);
-struct llc_service *llc_service_new_with_uri (void *(*accept_routine)(void *), void *(*thread_routine)(void *), char *uri, void *user_data);
-uint16_t	 llc_service_get_miu (const struct llc_service *service);
-void		 llc_service_set_miu (struct llc_service *service, uint16_t miu);
-uint8_t		 llc_service_get_rw (const struct llc_service *service);
-void		 llc_service_set_rw (struct llc_service *service, uint8_t rw);
-const char	*llc_service_get_uri (const struct llc_service *service);
-const char	*llc_service_set_uri (struct llc_service *service, const char *uri);
-void		 llc_service_free (struct llc_service *service);
+struct llc_service *llc_service_new(void * (*accept_routine)(void *), void * (*thread_routine)(void *), void *user_data);
+struct llc_service *llc_service_new_with_uri(void * (*accept_routine)(void *), void * (*thread_routine)(void *), char *uri, void *user_data);
+uint16_t	 llc_service_get_miu(const struct llc_service *service);
+void		 llc_service_set_miu(struct llc_service *service, uint16_t miu);
+uint8_t		 llc_service_get_rw(const struct llc_service *service);
+void		 llc_service_set_rw(struct llc_service *service, uint8_t rw);
+const char	*llc_service_get_uri(const struct llc_service *service);
+const char	*llc_service_set_uri(struct llc_service *service, const char *uri);
+void		 llc_service_free(struct llc_service *service);
 
 #endif /* !_LLC_SERVICE_H */

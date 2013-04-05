@@ -32,18 +32,18 @@
 #include "connectionless-echo-server.h"
 
 void *
-connectionless_echo_server_thread (void *arg)
+connectionless_echo_server_thread(void *arg)
 {
-    struct llc_connection *connection = (struct llc_connection *)arg;
+  struct llc_connection *connection = (struct llc_connection *)arg;
 
 
-    uint8_t remote_sap;
-    uint8_t buffer[1024];
+  uint8_t remote_sap;
+  uint8_t buffer[1024];
 
-    int len = llc_connection_recv (connection, buffer, sizeof (buffer), &remote_sap);
+  int len = llc_connection_recv(connection, buffer, sizeof(buffer), &remote_sap);
 
-    llc_link_send_data (connection->link, connection->service_sap, remote_sap, buffer, len);
+  llc_link_send_data(connection->link, connection->service_sap, remote_sap, buffer, len);
 
-    llc_connection_stop (connection);
-    return NULL;
+  llc_connection_stop(connection);
+  return NULL;
 }

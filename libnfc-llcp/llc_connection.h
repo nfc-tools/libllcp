@@ -32,50 +32,50 @@ struct pdu;
 struct llc_link;
 
 struct llc_connection {
-    uint8_t service_sap;
-    uint8_t remote_sap;
-    uint8_t local_sap;
-    char *remote_uri;
-    enum {
-	DLC_NEW,
-	DLC_ACCEPTED,
-	DLC_REJECTED,
-	DLC_RECEIVED_CC,
-	DLC_CONNECTED,
-	DLC_DISCONNECTED,
-	DLC_TERMINATED
-    } status;
-    pthread_t thread;
-    char *mq_up_name;
-    char *mq_down_name;
-    mqd_t llc_up;
-    mqd_t llc_down;
-    struct {
-	uint8_t s;	    /* Send State Variable */
-	uint8_t sa;	    /* Send Acknowledgement State Variable */
-	uint8_t r;	    /* Receive State Variable */
-	uint8_t ra;	    /* Receive Acknowledgement State Variable */
-    } state;
-    uint16_t local_miu;     /* Maximum Information Unit Size for I PDUs */
-    uint16_t remote_miu;    /* Maximum Information Unit Size for I PDUs */
-    uint8_t rwl;    /* Local Receive Window Size */
-    uint8_t rwr;    /* Remote Receive Window Size */
-    struct llc_link *link;
-    void *user_data;
+  uint8_t service_sap;
+  uint8_t remote_sap;
+  uint8_t local_sap;
+  char *remote_uri;
+  enum {
+    DLC_NEW,
+    DLC_ACCEPTED,
+    DLC_REJECTED,
+    DLC_RECEIVED_CC,
+    DLC_CONNECTED,
+    DLC_DISCONNECTED,
+    DLC_TERMINATED
+  } status;
+  pthread_t thread;
+  char *mq_up_name;
+  char *mq_down_name;
+  mqd_t llc_up;
+  mqd_t llc_down;
+  struct {
+    uint8_t s;	    /* Send State Variable */
+    uint8_t sa;	    /* Send Acknowledgement State Variable */
+    uint8_t r;	    /* Receive State Variable */
+    uint8_t ra;	    /* Receive Acknowledgement State Variable */
+  } state;
+  uint16_t local_miu;     /* Maximum Information Unit Size for I PDUs */
+  uint16_t remote_miu;    /* Maximum Information Unit Size for I PDUs */
+  uint8_t rwl;    /* Local Receive Window Size */
+  uint8_t rwr;    /* Remote Receive Window Size */
+  struct llc_link *link;
+  void *user_data;
 };
 
-struct llc_connection *llc_data_link_connection_new (struct llc_link *link, const struct pdu *pdu, int *reason);
-struct llc_connection *llc_logical_data_link_new (struct llc_link *link, const struct pdu *pdu);
-struct llc_connection *llc_outgoing_data_link_connection_new (struct llc_link *link, uint8_t local_sap, uint8_t remote_sap);
-struct llc_connection *llc_outgoing_data_link_connection_new_by_uri (struct llc_link *link, uint8_t local_sap, const char *remote_uri);
-int		 llc_connection_connect (struct llc_connection *connection);
-void		 llc_connection_accept (struct llc_connection *connection);
-void		 llc_connection_reject (struct llc_connection *connection);
-int		 llc_connection_send_pdu (struct llc_connection *connection, const struct pdu *pdu);
-int		 llc_connection_send (struct llc_connection *connection, const uint8_t *data, size_t len);
-int		 llc_connection_recv (struct llc_connection *connection, uint8_t *data, size_t len, uint8_t *ssap);
-int		 llc_connection_stop (struct llc_connection *connection);
-int		 llc_connection_wait (struct llc_connection *connection, void **value_ptr);
-void		 llc_connection_free (struct llc_connection *connection);
+struct llc_connection *llc_data_link_connection_new(struct llc_link *link, const struct pdu *pdu, int *reason);
+struct llc_connection *llc_logical_data_link_new(struct llc_link *link, const struct pdu *pdu);
+struct llc_connection *llc_outgoing_data_link_connection_new(struct llc_link *link, uint8_t local_sap, uint8_t remote_sap);
+struct llc_connection *llc_outgoing_data_link_connection_new_by_uri(struct llc_link *link, uint8_t local_sap, const char *remote_uri);
+int		 llc_connection_connect(struct llc_connection *connection);
+void		 llc_connection_accept(struct llc_connection *connection);
+void		 llc_connection_reject(struct llc_connection *connection);
+int		 llc_connection_send_pdu(struct llc_connection *connection, const struct pdu *pdu);
+int		 llc_connection_send(struct llc_connection *connection, const uint8_t *data, size_t len);
+int		 llc_connection_recv(struct llc_connection *connection, uint8_t *data, size_t len, uint8_t *ssap);
+int		 llc_connection_stop(struct llc_connection *connection);
+int		 llc_connection_wait(struct llc_connection *connection, void **value_ptr);
+void		 llc_connection_free(struct llc_connection *connection);
 
 #endif /* !_LLC_CONNECTION_H */

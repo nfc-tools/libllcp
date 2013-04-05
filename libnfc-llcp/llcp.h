@@ -39,18 +39,18 @@ struct llc_link;
 #define LLCP_VERSION_MAJOR 1
 #define LLCP_VERSION_MINOR 1
 struct llcp_version {
-    uint8_t major;
-    uint8_t minor;
+  uint8_t major;
+  uint8_t minor;
 };
 
-int		 llcp_init (void);
-int		 llcp_fini (void);
+int		 llcp_init(void);
+int		 llcp_fini(void);
 
-int		 llcp_version_agreement (struct llc_link *link, struct llcp_version version);
+int		 llcp_version_agreement(struct llc_link *link, struct llcp_version version);
 
-void		 llcp_threadslayer (pthread_t thread);
+void		 llcp_threadslayer(pthread_t thread);
 
-int		 llcp_disconnect (struct llc_link *link);
+int		 llcp_disconnect(struct llc_link *link);
 
 #define MAX_LOGICAL_DATA_LINK 8
 //          DATA_LINK_CONNECTION

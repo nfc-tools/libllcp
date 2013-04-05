@@ -35,33 +35,33 @@
 
 
 void *
-connected_echo_server_accept (void *arg)
+connected_echo_server_accept(void *arg)
 {
-    struct llc_connection *connection = (struct llc_connection *) arg;
-    sleep (1);
-    llc_connection_accept (connection);
-    return NULL;
+  struct llc_connection *connection = (struct llc_connection *) arg;
+  sleep(1);
+  llc_connection_accept(connection);
+  return NULL;
 }
 
 void *
-connected_echo_server_thread (void *arg)
+connected_echo_server_thread(void *arg)
 {
-    struct llc_connection *connection = (struct llc_connection *)arg;
+  struct llc_connection *connection = (struct llc_connection *)arg;
 
-    for (;;) {
+  for (;;) {
 
-	uint8_t buffer[1024];
+    uint8_t buffer[1024];
 
-	int len;
-	if ((len = llc_connection_recv (connection, buffer, sizeof (buffer), NULL)) < 0)
-	    break;
+    int len;
+    if ((len = llc_connection_recv(connection, buffer, sizeof(buffer), NULL)) < 0)
+      break;
 
-	sleep (1);
+    sleep(1);
 
-	if (llc_connection_send (connection, buffer, len) < 0)
-	    break;
-    }
+    if (llc_connection_send(connection, buffer, len) < 0)
+      break;
+  }
 
-    llc_connection_stop (connection);
-    return NULL;
+  llc_connection_stop(connection);
+  return NULL;
 }

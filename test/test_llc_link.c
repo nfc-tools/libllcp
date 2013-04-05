@@ -27,159 +27,159 @@
 #include "llc_service.h"
 
 void *
-void_service (void *arg)
+void_service(void *arg)
 {
-    return arg;
+  return arg;
 }
 
 void
-cut_setup (void)
+cut_setup(void)
 {
-    if (llcp_init ())
-	cut_fail ("llcp_init() failed");
+  if (llcp_init())
+    cut_fail("llcp_init() failed");
 
-    /* Void service is never called */
-    void_service (NULL);
+  /* Void service is never called */
+  void_service(NULL);
 }
 
 void
-cut_teardown (void)
+cut_teardown(void)
 {
-    llcp_fini ();
+  llcp_fini();
 }
 
 void
-test_llc_link_activate_as_initiator (void)
+test_llc_link_activate_as_initiator(void)
 {
-    struct llc_link *link;
+  struct llc_link *link;
 
-    link = llc_link_new ();
-    cut_assert_not_null (link, cut_message ("llc_link_new()"));
-    int res = llc_link_activate (link, LLC_INITIATOR, NULL, 0);
-    cut_assert_equal_int (0, res, cut_message ("llc_link_activate()"));
-    cut_assert_equal_int (LLCP_VERSION_MAJOR, link->version.major, cut_message ("Wrong major version"));
-    cut_assert_equal_int (LLCP_VERSION_MINOR, link->version.minor, cut_message ("Wrong minor version"));
-    cut_assert_equal_int (LLCP_DEFAULT_MIU, link->local_miu, cut_message ("Wrong local MIU"));
-    cut_assert_equal_int (LLCP_DEFAULT_MIU, link->remote_miu, cut_message ("Wrong remote MIU"));
-    cut_assert_equal_int (0x0001, link->remote_wks, cut_message ("Wrong remote WKS"));
-    cut_assert_equal_int (0, link->remote_lto.tv_sec, cut_message ("Wrong remote LTO sec"));
-    cut_assert_equal_int (100000, link->remote_lto.tv_usec, cut_message ("Wrong remote LTO nsec"));
-    cut_assert_equal_int (3, link->remote_lsc, cut_message ("Wrong remote LSC"));
+  link = llc_link_new();
+  cut_assert_not_null(link, cut_message("llc_link_new()"));
+  int res = llc_link_activate(link, LLC_INITIATOR, NULL, 0);
+  cut_assert_equal_int(0, res, cut_message("llc_link_activate()"));
+  cut_assert_equal_int(LLCP_VERSION_MAJOR, link->version.major, cut_message("Wrong major version"));
+  cut_assert_equal_int(LLCP_VERSION_MINOR, link->version.minor, cut_message("Wrong minor version"));
+  cut_assert_equal_int(LLCP_DEFAULT_MIU, link->local_miu, cut_message("Wrong local MIU"));
+  cut_assert_equal_int(LLCP_DEFAULT_MIU, link->remote_miu, cut_message("Wrong remote MIU"));
+  cut_assert_equal_int(0x0001, link->remote_wks, cut_message("Wrong remote WKS"));
+  cut_assert_equal_int(0, link->remote_lto.tv_sec, cut_message("Wrong remote LTO sec"));
+  cut_assert_equal_int(100000, link->remote_lto.tv_usec, cut_message("Wrong remote LTO nsec"));
+  cut_assert_equal_int(3, link->remote_lsc, cut_message("Wrong remote LSC"));
 
-    llc_link_deactivate (link);
+  llc_link_deactivate(link);
 
-    uint8_t parameters[] = { 0x01, 0x01, 0x23 };
+  uint8_t parameters[] = { 0x01, 0x01, 0x23 };
 
-    res = llc_link_activate (link, LLC_INITIATOR, parameters, sizeof (parameters));
-    cut_assert_equal_int (0, res, cut_message ("llc_link_activate()"));
-    cut_assert_equal_int (LLCP_VERSION_MAJOR, link->version.major, cut_message ("Wrong major version"));
-    cut_assert_equal_int (LLCP_VERSION_MINOR, link->version.minor, cut_message ("Wrong minor version"));
-    cut_assert_equal_int (LLCP_DEFAULT_MIU, link->local_miu, cut_message ("Wrong local MIU"));
-    cut_assert_equal_int (LLCP_DEFAULT_MIU, link->remote_miu, cut_message ("Wrong remote MIU"));
-    cut_assert_equal_int (0x0001, link->remote_wks, cut_message ("Wrong remote WKS"));
-    cut_assert_equal_int (0, link->remote_lto.tv_sec, cut_message ("Wrong remote LTO sec"));
-    cut_assert_equal_int (100000, link->remote_lto.tv_usec, cut_message ("Wrong remote LTO nsec"));
-    cut_assert_equal_int (3, link->remote_lsc, cut_message ("Wrong remote LSC"));
+  res = llc_link_activate(link, LLC_INITIATOR, parameters, sizeof(parameters));
+  cut_assert_equal_int(0, res, cut_message("llc_link_activate()"));
+  cut_assert_equal_int(LLCP_VERSION_MAJOR, link->version.major, cut_message("Wrong major version"));
+  cut_assert_equal_int(LLCP_VERSION_MINOR, link->version.minor, cut_message("Wrong minor version"));
+  cut_assert_equal_int(LLCP_DEFAULT_MIU, link->local_miu, cut_message("Wrong local MIU"));
+  cut_assert_equal_int(LLCP_DEFAULT_MIU, link->remote_miu, cut_message("Wrong remote MIU"));
+  cut_assert_equal_int(0x0001, link->remote_wks, cut_message("Wrong remote WKS"));
+  cut_assert_equal_int(0, link->remote_lto.tv_sec, cut_message("Wrong remote LTO sec"));
+  cut_assert_equal_int(100000, link->remote_lto.tv_usec, cut_message("Wrong remote LTO nsec"));
+  cut_assert_equal_int(3, link->remote_lsc, cut_message("Wrong remote LSC"));
 
-    llc_link_deactivate (link);
+  llc_link_deactivate(link);
 
-    uint8_t parameters2[] = { 0x02, 0x02, 0x01, 0x23 };
+  uint8_t parameters2[] = { 0x02, 0x02, 0x01, 0x23 };
 
-    res = llc_link_activate (link, LLC_INITIATOR, parameters2, sizeof (parameters2));
-    cut_assert_equal_int (0, res, cut_message ("llc_link_activate()"));
-    cut_assert_equal_int (LLCP_VERSION_MAJOR, link->version.major, cut_message ("Wrong major version"));
-    cut_assert_equal_int (LLCP_VERSION_MINOR, link->version.minor, cut_message ("Wrong minor version"));
-    cut_assert_equal_int (LLCP_DEFAULT_MIU, link->local_miu, cut_message ("Wrong local MIU"));
-    cut_assert_equal_int (419, link->remote_miu, cut_message ("Wrong remote MIU"));
-    cut_assert_equal_int (0x0001, link->remote_wks, cut_message ("Wrong remote WKS"));
-    cut_assert_equal_int (0, link->remote_lto.tv_sec, cut_message ("Wrong remote LTO sec"));
-    cut_assert_equal_int (100000, link->remote_lto.tv_usec, cut_message ("Wrong remote LTO nsec"));
-    cut_assert_equal_int (3, link->remote_lsc, cut_message ("Wrong remote LSC"));
+  res = llc_link_activate(link, LLC_INITIATOR, parameters2, sizeof(parameters2));
+  cut_assert_equal_int(0, res, cut_message("llc_link_activate()"));
+  cut_assert_equal_int(LLCP_VERSION_MAJOR, link->version.major, cut_message("Wrong major version"));
+  cut_assert_equal_int(LLCP_VERSION_MINOR, link->version.minor, cut_message("Wrong minor version"));
+  cut_assert_equal_int(LLCP_DEFAULT_MIU, link->local_miu, cut_message("Wrong local MIU"));
+  cut_assert_equal_int(419, link->remote_miu, cut_message("Wrong remote MIU"));
+  cut_assert_equal_int(0x0001, link->remote_wks, cut_message("Wrong remote WKS"));
+  cut_assert_equal_int(0, link->remote_lto.tv_sec, cut_message("Wrong remote LTO sec"));
+  cut_assert_equal_int(100000, link->remote_lto.tv_usec, cut_message("Wrong remote LTO nsec"));
+  cut_assert_equal_int(3, link->remote_lsc, cut_message("Wrong remote LSC"));
 
-    llc_link_deactivate (link);
+  llc_link_deactivate(link);
 
-    uint8_t parameters3[] = { 0x01, 0x01, 0x10, 0x42, 0x04, 0x00, 0x00, 0x00, 0x00, 0x02, 0x02, 0x01, 0x23, 0x03, 0x02, 0x12, 0x34, 0x04, 0x01, 0x64, 0x07, 0x01, 0x02 };
+  uint8_t parameters3[] = { 0x01, 0x01, 0x10, 0x42, 0x04, 0x00, 0x00, 0x00, 0x00, 0x02, 0x02, 0x01, 0x23, 0x03, 0x02, 0x12, 0x34, 0x04, 0x01, 0x64, 0x07, 0x01, 0x02 };
 
-    res = llc_link_activate (link, LLC_INITIATOR, parameters3, sizeof (parameters3));
-    cut_assert_equal_int (0, res, cut_message ("llc_link_activate()"));
-    cut_assert_equal_int (1, link->version.major, cut_message ("Wrong major version"));
-    cut_assert_equal_int (0, link->version.minor, cut_message ("Wrong minor version"));
-    cut_assert_equal_int (LLCP_DEFAULT_MIU, link->local_miu, cut_message ("Wrong local MIU"));
-    cut_assert_equal_int (419, link->remote_miu, cut_message ("Wrong remote MIU"));
-    cut_assert_equal_int (0x1235, link->remote_wks, cut_message ("Wrong remote WKS"));
-    cut_assert_equal_int (1, link->remote_lto.tv_sec, cut_message ("Wrong remote LTO sec"));
-    cut_assert_equal_int (0, link->remote_lto.tv_usec, cut_message ("Wrong remote LTO nsec"));
-    cut_assert_equal_int (2, link->remote_lsc, cut_message ("Wrong remote LSC"));
+  res = llc_link_activate(link, LLC_INITIATOR, parameters3, sizeof(parameters3));
+  cut_assert_equal_int(0, res, cut_message("llc_link_activate()"));
+  cut_assert_equal_int(1, link->version.major, cut_message("Wrong major version"));
+  cut_assert_equal_int(0, link->version.minor, cut_message("Wrong minor version"));
+  cut_assert_equal_int(LLCP_DEFAULT_MIU, link->local_miu, cut_message("Wrong local MIU"));
+  cut_assert_equal_int(419, link->remote_miu, cut_message("Wrong remote MIU"));
+  cut_assert_equal_int(0x1235, link->remote_wks, cut_message("Wrong remote WKS"));
+  cut_assert_equal_int(1, link->remote_lto.tv_sec, cut_message("Wrong remote LTO sec"));
+  cut_assert_equal_int(0, link->remote_lto.tv_usec, cut_message("Wrong remote LTO nsec"));
+  cut_assert_equal_int(2, link->remote_lsc, cut_message("Wrong remote LSC"));
 
-    llc_link_deactivate (link);
+  llc_link_deactivate(link);
 
-    uint8_t parameters4[] = { 0x01, 0x01, 0x09 };
+  uint8_t parameters4[] = { 0x01, 0x01, 0x09 };
 
-    res = llc_link_activate (link, LLC_INITIATOR, parameters4, sizeof (parameters4));
-    cut_assert_equal_int (-1, res, cut_message ("llc_link_activate()"));
+  res = llc_link_activate(link, LLC_INITIATOR, parameters4, sizeof(parameters4));
+  cut_assert_equal_int(-1, res, cut_message("llc_link_activate()"));
 
-    llc_link_free (link);
+  llc_link_free(link);
 }
 
 void
-test_llc_link_activate_as_target (void)
+test_llc_link_activate_as_target(void)
 {
-    struct llc_link *link;
+  struct llc_link *link;
 
-    link = llc_link_new ();
-    cut_assert_not_null (link, cut_message ("llc_link_new()"));
-    int res = llc_link_activate (link, LLC_TARGET, NULL, 0);
-    cut_assert_equal_int (0, res, cut_message ("llc_link_activate()"));
-    cut_assert_equal_int (LLCP_VERSION_MAJOR, link->version.major, cut_message ("Wrong major version"));
-    cut_assert_equal_int (LLCP_VERSION_MINOR, link->version.minor, cut_message ("Wrong minor version"));
-    cut_assert_equal_int (LLCP_DEFAULT_MIU, link->local_miu, cut_message ("Wrong local MIU"));
-    cut_assert_equal_int (LLCP_DEFAULT_MIU, link->remote_miu, cut_message ("Wrong remote MIU"));
-    cut_assert_equal_int (0x0001, link->remote_wks, cut_message ("Wrong remote WKS"));
-    cut_assert_equal_int (0, link->remote_lto.tv_sec, cut_message ("Wrong remote LTO sec"));
-    cut_assert_equal_int (100000, link->remote_lto.tv_usec, cut_message ("Wrong remote LTO nsec"));
-    cut_assert_equal_int (3, link->remote_lsc, cut_message ("Wrong remote LSC"));
+  link = llc_link_new();
+  cut_assert_not_null(link, cut_message("llc_link_new()"));
+  int res = llc_link_activate(link, LLC_TARGET, NULL, 0);
+  cut_assert_equal_int(0, res, cut_message("llc_link_activate()"));
+  cut_assert_equal_int(LLCP_VERSION_MAJOR, link->version.major, cut_message("Wrong major version"));
+  cut_assert_equal_int(LLCP_VERSION_MINOR, link->version.minor, cut_message("Wrong minor version"));
+  cut_assert_equal_int(LLCP_DEFAULT_MIU, link->local_miu, cut_message("Wrong local MIU"));
+  cut_assert_equal_int(LLCP_DEFAULT_MIU, link->remote_miu, cut_message("Wrong remote MIU"));
+  cut_assert_equal_int(0x0001, link->remote_wks, cut_message("Wrong remote WKS"));
+  cut_assert_equal_int(0, link->remote_lto.tv_sec, cut_message("Wrong remote LTO sec"));
+  cut_assert_equal_int(100000, link->remote_lto.tv_usec, cut_message("Wrong remote LTO nsec"));
+  cut_assert_equal_int(3, link->remote_lsc, cut_message("Wrong remote LSC"));
 
-    llc_link_deactivate (link);
-    llc_link_free (link);
+  llc_link_deactivate(link);
+  llc_link_free(link);
 }
 
 void
-test_llc_link_encode_parameters (void)
+test_llc_link_encode_parameters(void)
 {
-    struct llc_link *link;
+  struct llc_link *link;
 
-    link = llc_link_new ();
-    cut_assert_not_null (link, cut_message ("llc_link_new()"));
+  link = llc_link_new();
+  cut_assert_not_null(link, cut_message("llc_link_new()"));
 
-    uint8_t buffer[1024];
-    int res = llc_link_encode_parameters (link, buffer, sizeof (buffer));
-    cut_assert_not_equal_int (-1, res, cut_message ("llc_link_encode_parameters()"));
+  uint8_t buffer[1024];
+  int res = llc_link_encode_parameters(link, buffer, sizeof(buffer));
+  cut_assert_not_equal_int(-1, res, cut_message("llc_link_encode_parameters()"));
 
-    res = llc_link_configure (link, buffer, res);
-    cut_assert_equal_int (0, res, cut_message ("llc_link_configure()"));
+  res = llc_link_configure(link, buffer, res);
+  cut_assert_equal_int(0, res, cut_message("llc_link_configure()"));
 }
 
 void
-test_llc_link_find_sap_by_uri (void)
+test_llc_link_find_sap_by_uri(void)
 {
-    struct llc_link *link;
-    int res;
+  struct llc_link *link;
+  int res;
 
-    link = llc_link_new ();
-    cut_assert_not_null (link, cut_message ("llc_link_new()"));
+  link = llc_link_new();
+  cut_assert_not_null(link, cut_message("llc_link_new()"));
 
-    struct llc_service *service = llc_service_new_with_uri (NULL, void_service, "urn:nfc:xsn:foo", NULL);
-    res = llc_link_service_bind (link, service, -1);
-    cut_assert_not_equal_int (-1, res, cut_message ("llc_link_service_bind()"));
+  struct llc_service *service = llc_service_new_with_uri(NULL, void_service, "urn:nfc:xsn:foo", NULL);
+  res = llc_link_service_bind(link, service, -1);
+  cut_assert_not_equal_int(-1, res, cut_message("llc_link_service_bind()"));
 
-    uint8_t sap = llc_link_find_sap_by_uri (link, "urn:nfc:xsn:foo");
-    cut_assert_not_equal_int (0, sap, cut_message ("llc_link_find_sap_by_uri()"));
-    cut_assert_equal_int (res, sap, cut_message ("Wrong SAP"));
+  uint8_t sap = llc_link_find_sap_by_uri(link, "urn:nfc:xsn:foo");
+  cut_assert_not_equal_int(0, sap, cut_message("llc_link_find_sap_by_uri()"));
+  cut_assert_equal_int(res, sap, cut_message("Wrong SAP"));
 
-    llc_link_service_unbind (link, service->sap);
-    sap = llc_link_find_sap_by_uri (link, "urn:nfc:xsn:foo");
-    cut_assert_equal_int (0, sap, cut_message ("llc_link_find_sap_by_uri()"));
+  llc_link_service_unbind(link, service->sap);
+  sap = llc_link_find_sap_by_uri(link, "urn:nfc:xsn:foo");
+  cut_assert_equal_int(0, sap, cut_message("llc_link_find_sap_by_uri()"));
 
-    llc_service_free (service);
-    llc_link_free (link);
+  llc_service_free(service);
+  llc_link_free(link);
 }

@@ -24,9 +24,9 @@
 
 #ifdef DEBUG
 
-int	 llcp_log_init (void);
-int	 llcp_log_fini (void);
-void	 llcp_log_log (char *category, int priority, char *format, ...);
+int	 llcp_log_init(void);
+int	 llcp_log_fini(void);
+void	 llcp_log_log(char *category, int priority, char *format, ...);
 
 #define LLC_PRIORITY_FATAL  0
 #define LLC_PRIORITY_ALERT  1

@@ -29,77 +29,77 @@
 #include "llcp_pdu.h"
 
 const char *pdu_names[] = {
-    "SYMM",
-    "PAX",
-    "AGF",
-    "UI",
-    "CONNECT",
-    "DISC",
-    "CC",
-    "DM",
-    "FRMR",
-    "SNL",
-    "???",
-    "???",
-    "I",
-    "RR",
-    "RNR",
-    "???"
+  "SYMM",
+  "PAX",
+  "AGF",
+  "UI",
+  "CONNECT",
+  "DISC",
+  "CC",
+  "DM",
+  "FRMR",
+  "SNL",
+  "???",
+  "???",
+  "I",
+  "RR",
+  "RNR",
+  "???"
 };
 
 static void
-explain_pdu (const char *s)
+explain_pdu(const char *s)
 {
-    unsigned byte;
-    uint8_t raw_pdu[BUFSIZ];
+  unsigned byte;
+  uint8_t raw_pdu[BUFSIZ];
 
-    off_t offset = 0;
-    int r, n = 0;
-    while (1 == sscanf (s + offset, "%02x%n", &byte, &r)) {
-	raw_pdu[n++] = byte;
-	offset += r;
-    }
+  off_t offset = 0;
+  int r, n = 0;
+  while (1 == sscanf(s + offset, "%02x%n", &byte, &r)) {
+    raw_pdu[n++] = byte;
+    offset += r;
+  }
 
-    struct pdu *pdu;
-    pdu = pdu_unpack (raw_pdu, n);
+  struct pdu *pdu;
+  pdu = pdu_unpack(raw_pdu, n);
 
-    if (!pdu) {
-	printf ("Invalid PDU header\n");
-	return;
-    }
+  if (!pdu) {
+    printf("Invalid PDU header\n");
+    return;
+  }
 
-    printf ("  DSAP ......... : 0x%02x (%d)\n"
-	    "  PTYPE ........ : 0x%02x (%s)\n"
-	    "  SSAP ......... : 0x%02x (%d)\n", pdu->dsap, pdu->dsap, pdu->ptype, pdu_names[pdu->ptype], pdu->ssap, pdu->ssap);
-    if (pdu_has_sequence_field (pdu)) {
-	printf ("  N(R) ......... : 0x%02x (%d)\n"
-		"  N(S) ......... : 0x%02x (%d)\n", pdu->nr, pdu->nr, pdu->ns, pdu->ns);
-    }
-    if (pdu->information_size) {
-	printf ("  Information .. : %d bytes\n", (int) pdu->information_size);
-    }
+  printf("  DSAP ......... : 0x%02x (%d)\n"
+         "  PTYPE ........ : 0x%02x (%s)\n"
+         "  SSAP ......... : 0x%02x (%d)\n", pdu->dsap, pdu->dsap, pdu->ptype, pdu_names[pdu->ptype], pdu->ssap, pdu->ssap);
+  if (pdu_has_sequence_field(pdu)) {
+    printf("  N(R) ......... : 0x%02x (%d)\n"
+           "  N(S) ......... : 0x%02x (%d)\n", pdu->nr, pdu->nr, pdu->ns, pdu->ns);
+  }
+  if (pdu->information_size) {
+    printf("  Information .. : %d bytes\n", (int) pdu->information_size);
+  }
 
-    pdu_free (pdu);
+  pdu_free(pdu);
 }
 
 int
-main (int argc, char *argv[])
+main(int argc, char *argv[])
 {
-    char buffer[BUFSIZ];
+  char buffer[BUFSIZ];
 
-    if (argc > 1) {
-	for (int i = 1; i < argc; i++) {
-	    printf ("PDU: %s\n", argv[i]);
-	    explain_pdu (argv[i]);
-	}
-    } else {
-	for (;;) {
-	    printf ("PDU: ");
-	    if (!fgets (buffer, sizeof (buffer), stdin))
-		break;
-	    explain_pdu (buffer);
-	}
+  if (argc > 1) {
+    for (int i = 1; i < argc; i++) {
+      printf("PDU: %s\n", argv[i]);
+      explain_pdu(argv[i]);
     }
+  } else {
+    for (;;) {
+      printf("PDU: ");
+      if (!fgets(buffer, sizeof(buffer), stdin))
+        break;
+      explain_pdu(buffer);
+    }
+  }
 
-    exit(EXIT_SUCCESS);
+  exit(EXIT_SUCCESS);
 }

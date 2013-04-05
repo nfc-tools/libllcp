@@ -37,23 +37,23 @@
 #define LLCP_PARAMETER_SDREQ   0x08
 #define LLCP_PARAMETER_SDRES   0x09
 
-int	 parameter_encode_version (uint8_t buffer[], size_t buffer_len, struct llcp_version version);
-int	 parameter_decode_version (const uint8_t buffer[], size_t buffer_len, struct llcp_version *version);
-int	 parameter_encode_miux (uint8_t buffer[], size_t buffer_len, uint16_t miux);
-int	 parameter_decode_miux (const uint8_t buffer[], size_t buffer_len, uint16_t *miux);
-int	 parameter_encode_wks (uint8_t buffer[], size_t buffer_len, uint16_t wks);
-int	 parameter_decode_wks (const uint8_t buffer[], size_t buffer_len, uint16_t *wks);
-int	 parameter_encode_lto (uint8_t buffer[], size_t buffer_len, uint8_t lto);
-int	 parameter_decode_lto (const uint8_t buffer[], size_t buffer_len, uint8_t *lto);
-int	 parameter_encode_rw (uint8_t buffer[], size_t buffer_len, uint8_t rw);
-int	 parameter_decode_rw (const uint8_t buffer[], size_t buffer_len, uint8_t *rw);
-int	 parameter_encode_sn (uint8_t buffer[], size_t buffer_len, const char *sn);
-int	 parameter_decode_sn (const uint8_t buffer[], size_t buffer_len, char *sn, size_t sn_max_len);
-int	 parameter_encode_opt (uint8_t buffer[], size_t buffer_len, uint8_t opt);
-int	 parameter_decode_opt (const uint8_t buffer[], size_t buffer_len, uint8_t *opt);
-int	 parameter_encode_sdreq (uint8_t buffer[], size_t buffer_len, uint8_t tid, const char *uri);
-int	 parameter_decode_sdreq (const uint8_t buffer[], size_t buffer_len, uint8_t *tid, char **uri);
-int	 parameter_encode_sdres (uint8_t buffer[], size_t buffer_len, uint8_t tid, uint8_t sap);
-int	 parameter_decode_sdres (const uint8_t buffer[], size_t buffer_len, uint8_t *tid, uint8_t *sap);
+int	 parameter_encode_version(uint8_t buffer[], size_t buffer_len, struct llcp_version version);
+int	 parameter_decode_version(const uint8_t buffer[], size_t buffer_len, struct llcp_version *version);
+int	 parameter_encode_miux(uint8_t buffer[], size_t buffer_len, uint16_t miux);
+int	 parameter_decode_miux(const uint8_t buffer[], size_t buffer_len, uint16_t *miux);
+int	 parameter_encode_wks(uint8_t buffer[], size_t buffer_len, uint16_t wks);
+int	 parameter_decode_wks(const uint8_t buffer[], size_t buffer_len, uint16_t *wks);
+int	 parameter_encode_lto(uint8_t buffer[], size_t buffer_len, uint8_t lto);
+int	 parameter_decode_lto(const uint8_t buffer[], size_t buffer_len, uint8_t *lto);
+int	 parameter_encode_rw(uint8_t buffer[], size_t buffer_len, uint8_t rw);
+int	 parameter_decode_rw(const uint8_t buffer[], size_t buffer_len, uint8_t *rw);
+int	 parameter_encode_sn(uint8_t buffer[], size_t buffer_len, const char *sn);
+int	 parameter_decode_sn(const uint8_t buffer[], size_t buffer_len, char *sn, size_t sn_max_len);
+int	 parameter_encode_opt(uint8_t buffer[], size_t buffer_len, uint8_t opt);
+int	 parameter_decode_opt(const uint8_t buffer[], size_t buffer_len, uint8_t *opt);
+int	 parameter_encode_sdreq(uint8_t buffer[], size_t buffer_len, uint8_t tid, const char *uri);
+int	 parameter_decode_sdreq(const uint8_t buffer[], size_t buffer_len, uint8_t *tid, char **uri);
+int	 parameter_encode_sdres(uint8_t buffer[], size_t buffer_len, uint8_t tid, uint8_t sap);
+int	 parameter_decode_sdres(const uint8_t buffer[], size_t buffer_len, uint8_t *tid, uint8_t *sap);
 
 #endif /* !_LLCP_PARAMETERS_H */

@@ -22,6 +22,6 @@
 #ifndef _CONNECTIONLESS_ECHO_SERVER_H
 #define _CONNECTIONLESS_ECHO_SERVER_H
 
-void		*connectionless_echo_server_thread (void *arg);
+void		*connectionless_echo_server_thread(void *arg);
 
 #endif /* !_CONNECTIONLESS_ECHO_SERVER_H */

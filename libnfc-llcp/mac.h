@@ -27,28 +27,28 @@
 #include <nfc/nfc.h>
 
 struct mac_link {
-    enum { MAC_LINK_UNSET, MAC_LINK_INITIATOR, MAC_LINK_TARGET } mode;
-    nfc_device *device;
-    struct llc_link *llc_link;
-    uint8_t nfcid[10];
-    uint8_t buffer[BUFSIZ];
-    size_t buffer_size;
-    pthread_t *__restrict__ exchange_pdus_thread;
+  enum { MAC_LINK_UNSET, MAC_LINK_INITIATOR, MAC_LINK_TARGET } mode;
+  nfc_device *device;
+  struct llc_link *llc_link;
+  uint8_t nfcid[10];
+  uint8_t buffer[BUFSIZ];
+  size_t buffer_size;
+  pthread_t *__restrict__ exchange_pdus_thread;
 };
 
-struct mac_link	*mac_link_new (nfc_device *device, struct llc_link *llc_link);
+struct mac_link	*mac_link_new(nfc_device *device, struct llc_link *llc_link);
 
-int		 mac_link_activate (struct mac_link *mac_link);
-int		 mac_link_activate_as_initiator (struct mac_link *mac_link);
-int		 mac_link_activate_as_target (struct mac_link *mac_link);
+int		 mac_link_activate(struct mac_link *mac_link);
+int		 mac_link_activate_as_initiator(struct mac_link *mac_link);
+int		 mac_link_activate_as_target(struct mac_link *mac_link);
 
-ssize_t		 pdu_send (struct mac_link *link, const void *buf, size_t nbytes);
-ssize_t		 pdu_receive (struct mac_link *link, void *buf, size_t nbytes);
-int		 mac_link_wait (struct mac_link *link, void **value_ptr);
+ssize_t		 pdu_send(struct mac_link *link, const void *buf, size_t nbytes);
+ssize_t		 pdu_receive(struct mac_link *link, void *buf, size_t nbytes);
+int		 mac_link_wait(struct mac_link *link, void **value_ptr);
 #define MAC_DEACTIVATE_ON_REQUEST 0x00
 #define MAC_DEACTIVATE_ON_FAILURE 0x01
-int		 mac_link_deactivate (struct mac_link *link, intptr_t reason);
+int		 mac_link_deactivate(struct mac_link *link, intptr_t reason);
 
-void		 mac_link_free (struct mac_link *mac_link);
+void		 mac_link_free(struct mac_link *mac_link);
 
 #endif /* !_MAC_H */

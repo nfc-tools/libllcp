@@ -41,76 +41,76 @@
 /* Service Discovery Protocol */
 
 void
-llc_service_sdp_thread_cleanup (void *arg)
+llc_service_sdp_thread_cleanup(void *arg)
 {
-    struct llc_connection *connection = (struct llc_connection *) arg;
+  struct llc_connection *connection = (struct llc_connection *) arg;
 
-    (void) connection;
+  (void) connection;
 }
 
 void *
-llc_service_sdp_thread (void *arg)
+llc_service_sdp_thread(void *arg)
 {
-    struct llc_connection *connection = (struct llc_connection *) arg;
-    mqd_t llc_up, llc_down;
+  struct llc_connection *connection = (struct llc_connection *) arg;
+  mqd_t llc_up, llc_down;
 
-    int old_cancelstate;
+  int old_cancelstate;
 
-    pthread_setcancelstate (PTHREAD_CANCEL_DISABLE, &old_cancelstate);
+  pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, &old_cancelstate);
 
-    llc_up   = mq_open (connection->mq_up_name, O_RDONLY);
-    llc_down = mq_open (connection->mq_down_name, O_WRONLY);
+  llc_up   = mq_open(connection->mq_up_name, O_RDONLY);
+  llc_down = mq_open(connection->mq_down_name, O_WRONLY);
 
-    if (llc_up == (mqd_t)-1)
-	LLC_SDP_LOG (LLC_PRIORITY_ERROR, "mq_open(%s)", connection->mq_up_name);
-    if (llc_down == (mqd_t)-1)
-	LLC_SDP_LOG (LLC_PRIORITY_ERROR, "mq_open(%s)", connection->mq_down_name);
+  if (llc_up == (mqd_t) - 1)
+    LLC_SDP_LOG(LLC_PRIORITY_ERROR, "mq_open(%s)", connection->mq_up_name);
+  if (llc_down == (mqd_t) - 1)
+    LLC_SDP_LOG(LLC_PRIORITY_ERROR, "mq_open(%s)", connection->mq_down_name);
 
-    pthread_cleanup_push (llc_service_sdp_thread_cleanup, arg);
-    pthread_setcancelstate (old_cancelstate, NULL);
-    LLC_SDP_MSG (LLC_PRIORITY_INFO, "Service Discovery Protocol started");
+  pthread_cleanup_push(llc_service_sdp_thread_cleanup, arg);
+  pthread_setcancelstate(old_cancelstate, NULL);
+  LLC_SDP_MSG(LLC_PRIORITY_INFO, "Service Discovery Protocol started");
 
-	int res;
+  int res;
 
-	uint8_t buffer[1024];
-	LLC_SDP_MSG (LLC_PRIORITY_TRACE, "mq_receive+");
-	pthread_testcancel ();
-	res = mq_receive (llc_up, (char *) buffer, sizeof (buffer), NULL);
-	pthread_testcancel ();
-	if (res < 0) {
-	    pthread_testcancel ();
-	}
-	LLC_SDP_LOG (LLC_PRIORITY_TRACE, "Received %d bytes", res);
+  uint8_t buffer[1024];
+  LLC_SDP_MSG(LLC_PRIORITY_TRACE, "mq_receive+");
+  pthread_testcancel();
+  res = mq_receive(llc_up, (char *) buffer, sizeof(buffer), NULL);
+  pthread_testcancel();
+  if (res < 0) {
+    pthread_testcancel();
+  }
+  LLC_SDP_LOG(LLC_PRIORITY_TRACE, "Received %d bytes", res);
 
-	uint8_t tid;
-	char *uri;
+  uint8_t tid;
+  char *uri;
 
-	switch (buffer[2]) {
-	case LLCP_PARAMETER_SDREQ:
-	    if (parameter_decode_sdreq (buffer + 2, res - 2, &tid, &uri) < 0) {
-		LLC_SDP_MSG (LLC_PRIORITY_ERROR, "Ignoring PDU");
-	    } else {
-		LLC_SDP_LOG (LLC_PRIORITY_TRACE, "Service Discovery Request #0x%02x for '%s'", tid, uri);
+  switch (buffer[2]) {
+    case LLCP_PARAMETER_SDREQ:
+      if (parameter_decode_sdreq(buffer + 2, res - 2, &tid, &uri) < 0) {
+        LLC_SDP_MSG(LLC_PRIORITY_ERROR, "Ignoring PDU");
+      } else {
+        LLC_SDP_LOG(LLC_PRIORITY_TRACE, "Service Discovery Request #0x%02x for '%s'", tid, uri);
 
-		uint8_t sap = llc_link_find_sap_by_uri (connection->link, uri);
+        uint8_t sap = llc_link_find_sap_by_uri(connection->link, uri);
 
-		if (!sap) {
-		    LLC_SDP_LOG (LLC_PRIORITY_ERROR, "No registered service provide '%s'", uri);
-		}
-		buffer[0] = 0x06;
-		buffer[1] = 0x41;
-		int n = parameter_encode_sdres (buffer + 2, sizeof (buffer) -2, tid, sap);
+        if (!sap) {
+          LLC_SDP_LOG(LLC_PRIORITY_ERROR, "No registered service provide '%s'", uri);
+        }
+        buffer[0] = 0x06;
+        buffer[1] = 0x41;
+        int n = parameter_encode_sdres(buffer + 2, sizeof(buffer) - 2, tid, sap);
 
-		mq_send (llc_down, (char *) buffer, n + 2, 0);
-		LLC_SDP_LOG (LLC_PRIORITY_TRACE, "Sent %d bytes", n+2);
+        mq_send(llc_down, (char *) buffer, n + 2, 0);
+        LLC_SDP_LOG(LLC_PRIORITY_TRACE, "Sent %d bytes", n + 2);
 
-	    }
-	    break;
-	default:
-	    LLC_SDP_MSG (LLC_PRIORITY_ERROR, "Invalid parameter type");
-	}
+      }
+      break;
+    default:
+      LLC_SDP_MSG(LLC_PRIORITY_ERROR, "Invalid parameter type");
+  }
 
-    pthread_cleanup_pop (1);
-    llc_connection_stop (connection);
-    return NULL;
+  pthread_cleanup_pop(1);
+  llc_connection_stop(connection);
+  return NULL;
 }

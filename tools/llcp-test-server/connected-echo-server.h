@@ -22,7 +22,7 @@
 #ifndef _CONNECTED_ECHO_SERVER_H
 #define _CONNECTED_ECHO_SERVER_H
 
-void		*connected_echo_server_accept (void *arg);
-void		*connected_echo_server_thread (void *arg);
+void		*connected_echo_server_accept(void *arg);
+void		*connected_echo_server_thread(void *arg);
 
 #endif /* !_CONNECTIONORIENTED_ECHO_SERVER_H */

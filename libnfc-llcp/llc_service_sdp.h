@@ -22,6 +22,6 @@
 #ifndef _LLC_SERVICE_SDP_H
 #define _LLC_SERVICE_SDP_H
 
-void		*llc_service_sdp_thread (void *arg);
+void		*llc_service_sdp_thread(void *arg);
 
 #endif /* !_LLC_SERVICE_SDP_H */
