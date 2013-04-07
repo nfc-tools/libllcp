@@ -1,6 +1,6 @@
 # $Id$
 
-AC_INIT([libnfc-llcp],[0.1.0])
+AC_INIT([libllcp],[0.1.0])
 
 AC_CONFIG_MACRO_DIR([m4])
 
@@ -95,7 +95,7 @@ AC_CONFIG_FILES([
 	   examples/npp-server/Makefile
 	   examples/snep-client/Makefile
 	   examples/snep-server/Makefile
-	   libnfc-llcp/Makefile
+	   libllcp/Makefile
 	   test/Makefile
 	   tools/Makefile
 	   tools/llcp-pdu-explain/Makefile

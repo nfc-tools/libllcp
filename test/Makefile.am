@@ -1,6 +1,6 @@
 # $Id$
 
-AM_CPPFLAGS = $(CUTTER_CFLAGS) -I$(top_srcdir)/libnfc-llcp
+AM_CPPFLAGS = $(CUTTER_CFLAGS) -I$(top_srcdir)/libllcp
 LIBS = $(CUTTER_LIBS)
 
 if WITH_CUTTER
@@ -26,27 +26,27 @@ endif
 AM_LDFLAGS = -module -rpath $(libdir) -avoid-version -no-undefined
 
 test_llc_connection_la_SOURCES = test_llc_connection.c
-test_llc_connection_la_LIBADD = $(top_builddir)/libnfc-llcp/libnfc-llcp.la
+test_llc_connection_la_LIBADD = $(top_builddir)/libllcp/libllcp.la
 test_llc_connection_la_CFLAGS = $(LIBNFC_CFLAGS)
 
 test_llc_link_la_SOURCES = test_llc_link.c
-test_llc_link_la_LIBADD = $(top_builddir)/libnfc-llcp/libnfc-llcp.la
+test_llc_link_la_LIBADD = $(top_builddir)/libllcp/libllcp.la
 
 test_llcp_pdu_la_SOURCES = test_llcp_pdu.c
-test_llcp_pdu_la_LIBADD = $(top_builddir)/libnfc-llcp/libnfc-llcp.la
+test_llcp_pdu_la_LIBADD = $(top_builddir)/libllcp/libllcp.la
 
 test_llcp_parameters_la_SOURCES = test_llcp_parameters.c
-test_llcp_parameters_la_LIBADD = $(top_builddir)/libnfc-llcp/libnfc-llcp.la
+test_llcp_parameters_la_LIBADD = $(top_builddir)/libllcp/libllcp.la
 
 test_llc_service_la_SOURCES = test_llc_service.c
-test_llc_service_la_LIBADD = $(top_builddir)/libnfc-llcp/libnfc-llcp.la
+test_llc_service_la_LIBADD = $(top_builddir)/libllcp/libllcp.la
 
 test_dummy_mac_link_la_SOURCES = test_dummy_mac_link.c
-test_dummy_mac_link_la_LIBADD = $(top_builddir)/libnfc-llcp/libnfc-llcp.la
+test_dummy_mac_link_la_LIBADD = $(top_builddir)/libllcp/libllcp.la
 test_dummy_mac_link_la_CFLAGS = $(LIBNFC_CFLAGS)
 
 test_mac_link_la_SOURCES = test_mac_link.c
-test_mac_link_la_LIBADD = $(top_builddir)/libnfc-llcp/libnfc-llcp.la
+test_mac_link_la_LIBADD = $(top_builddir)/libllcp/libllcp.la
 test_mac_link_la_CFLAGS = $(LIBNFC_CFLAGS)
 test_mac_link_la_LIBS = $(LIBNFC_LIBS)
 

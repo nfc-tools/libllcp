@@ -34,7 +34,7 @@
 #include "llc_service_sdp.h"
 #include "llcp_parameters.h"
 
-#define LOG_LLC_SDP "libnfc-llcp.llc.sdp"
+#define LOG_LLC_SDP "libllcp.llc.sdp"
 #define LLC_SDP_MSG(priority, message) llcp_log_log (LOG_LLC_SDP, priority, "(%p) %s", pthread_self (), message)
 #define LLC_SDP_LOG(priority, format, ...) llcp_log_log (LOG_LLC_SDP, priority, "(%p) " format, pthread_self (), __VA_ARGS__)
 

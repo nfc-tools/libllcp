@@ -43,7 +43,7 @@
 #include "llc_service_sdp.h"
 #include "mac.h"
 
-#define LOG_LLC_LINK "libnfc-llcp.llc.link"
+#define LOG_LLC_LINK "libllcp.llc.link"
 #define LLC_LINK_MSG(priority, message) llcp_log_log (LOG_LLC_LINK, priority, "%s", message)
 #define LLC_LINK_LOG(priority, format, ...) llcp_log_log (LOG_LLC_LINK, priority, format, __VA_ARGS__)
 
@@ -65,8 +65,8 @@ llc_link_new(void) {
     link->mac_link = NULL;
     link->local_miu = LLCP_DEFAULT_MIU;
 
-    if ((asprintf(&link->mq_up_name, "/libnfc-llcp-%d-%p-up", getpid(), (void *) link) < 0) ||
-        (asprintf(&link->mq_down_name, "/libnfc-llcp-%d-%p-down", getpid(), (void *) link) < 0)) {
+    if ((asprintf(&link->mq_up_name, "/libllcp-%d-%p-up", getpid(), (void *) link) < 0) ||
+        (asprintf(&link->mq_down_name, "/libllcp-%d-%p-down", getpid(), (void *) link) < 0)) {
       LLC_LINK_MSG(LLC_PRIORITY_FATAL, "Cannot print to allocated string");
     }
     link->llc_up   = (mqd_t) - 1;

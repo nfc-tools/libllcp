@@ -41,7 +41,7 @@
 #include "llcp_pdu.h"
 #include "llcp_parameters.h"
 
-#define LOG_LLC_CONNECTION "libnfc-llcp.llc.connection"
+#define LOG_LLC_CONNECTION "libllcp.llc.connection"
 #define LLC_CONNECTION_MSG(priority, message) llcp_log_log (LOG_LLC_CONNECTION, priority, "%s", message)
 #define LLC_CONNECTION_LOG(priority, format, ...) llcp_log_log (LOG_LLC_CONNECTION, priority, format, __VA_ARGS__)
 
@@ -94,7 +94,7 @@ llc_connection_start(struct llc_connection *connection)
     .mq_maxmsg  = 2,
   };
 
-  if (asprintf(&connection->mq_up_name, "/libnfc-llcp-%d-%p-%s", getpid(), (void *) connection, "up") < 0) {
+  if (asprintf(&connection->mq_up_name, "/libllcp-%d-%p-%s", getpid(), (void *) connection, "up") < 0) {
     LLC_CONNECTION_MSG(LLC_PRIORITY_FATAL, "Cannot print to allocated string");
     return -1;
   }
@@ -110,7 +110,7 @@ llc_connection_start(struct llc_connection *connection)
     .mq_maxmsg  = 2,
   };
 
-  if (asprintf(&connection->mq_down_name, "/libnfc-llcp-%d-%p-%s", getpid(), (void *) connection, "down") < 0) {
+  if (asprintf(&connection->mq_down_name, "/libllcp-%d-%p-%s", getpid(), (void *) connection, "down") < 0) {
     LLC_CONNECTION_MSG(LLC_PRIORITY_FATAL, "Cannot print to allocated string");
     return -1;
   }

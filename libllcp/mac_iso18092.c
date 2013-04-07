@@ -43,7 +43,7 @@
 #include "llc_link.h"
 #include "mac.h"
 
-#define LOG_MAC_LINK "libnfc-llcp.mac.link"
+#define LOG_MAC_LINK "libllcp.mac.link"
 #define MAC_LINK_MSG(priority, message) llcp_log_log (LOG_MAC_LINK, priority, "%s", message)
 #define MAC_LINK_LOG(priority, format, ...) llcp_log_log (LOG_MAC_LINK, priority, format, __VA_ARGS__)
 

@@ -37,7 +37,7 @@
 #include "llcp_pdu.h"
 #include "llc_service.h"
 
-#define LOG_LLC_SERVICE "libnfc-llcp.llc.service"
+#define LOG_LLC_SERVICE "libllcp.llc.service"
 #define LLC_SERVICE_MSG(priority, message) llcp_log_log (LOG_LLC_SERVICE, priority, "%s", message)
 #define LLC_SERVICE_LOG(priority, format, ...) llcp_log_log (LOG_LLC_SERVICE, priority, format, __VA_ARGS__)
 

@@ -31,7 +31,7 @@
 #include "llcp_log.h"
 #include "llcp_parameters.h"
 
-#define LOG_LLC_TLV "libnfc-llcp.llc.tlv"
+#define LOG_LLC_TLV "libllcp.llc.tlv"
 #define LLC_TLV_MSG(priority, message) llcp_log_log (LOG_LLC_TLV, priority, "%s",  message)
 
 /*

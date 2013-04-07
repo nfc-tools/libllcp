@@ -43,7 +43,7 @@
 #include "llc_service.h"
 #include "mac.h"
 
-#define LOG_LLC_SERVICE_LLC "libnfc-llcp.llc.llc"
+#define LOG_LLC_SERVICE_LLC "libllcp.llc.llc"
 #define LLC_SERVICE_LLC_MSG(priority, message) llcp_log_log (LOG_LLC_SERVICE_LLC, priority, "(%p) %s", pthread_self (), message)
 #define LLC_SERVICE_LLC_LOG(priority, format, ...) llcp_log_log (LOG_LLC_SERVICE_LLC, priority, "(%p) " format, pthread_self (), __VA_ARGS__)
 

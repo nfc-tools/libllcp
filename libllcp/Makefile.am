@@ -12,9 +12,9 @@ llcp_HEADERS = \
 		mac.h
 llcpdir = $(includedir)/nfc
 
-lib_LTLIBRARIES = libnfc-llcp.la
+lib_LTLIBRARIES = libllcp.la
 
-libnfc_llcp_la_SOURCES = \
+libllcp_la_SOURCES = \
 			 llcp.c \
 			 llcp_pdu.c \
 			 llcp_parameters.c \
@@ -26,7 +26,7 @@ libnfc_llcp_la_SOURCES = \
 			 mac_iso18092.c
 
 if WITH_DEBUG
-libnfc_llcp_la_SOURCES += llcp_log.c
+libllcp_la_SOURCES += llcp_log.c
 endif
 
 EXTRA_DIST = \

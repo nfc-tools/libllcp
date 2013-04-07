@@ -32,7 +32,7 @@
 #include "llcp_parameters.h"
 #include "llcp_pdu.h"
 
-#define LOG_LLC_PDU "libnfc-llcp.llc.pdu"
+#define LOG_LLC_PDU "libllcp.llc.pdu"
 #define LLC_PDU_MSG(priority, message) llcp_log_log (LOG_LLC_PDU, priority, "%s", message)
 #define LLC_PDU_LOG(priority, format, ...) llcp_log_log (LOG_LLC_PDU, priority, format, __VA_ARGS__)
 
