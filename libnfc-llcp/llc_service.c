@@ -47,7 +47,7 @@ llc_service_new(void * (*accept_routine)(void *), void * (*thread_routine)(void 
 }
 
 struct llc_service *
-llc_service_new_with_uri(void * (*accept_routine)(void *), void * (*thread_routine)(void *), char *uri, void *user_data) {
+llc_service_new_with_uri(void * (*accept_routine)(void *), void * (*thread_routine)(void *), const char *uri, void *user_data) {
   assert(thread_routine);
 
   struct llc_service *service;
