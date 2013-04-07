@@ -26,7 +26,7 @@
 
 int	 llcp_log_init(void);
 int	 llcp_log_fini(void);
-void	 llcp_log_log(char *category, int priority, char *format, ...);
+void	 llcp_log_log(const char *category, int priority, const char *format, ...);
 
 #define LLC_PRIORITY_FATAL  0
 #define LLC_PRIORITY_ALERT  1
@@ -38,7 +38,7 @@ void	 llcp_log_log(char *category, int priority, char *format, ...);
 #define LLC_PRIORITY_DEBUG  7
 #define LLC_PRIORITY_TRACE  8
 
-#else
+#else /* DEBUG */
 
 #define llcp_log_init() (0)
 #define llcp_log_fini() (0)
@@ -56,6 +56,6 @@ void	 llcp_log_log(char *category, int priority, char *format, ...);
 #define LLC_PRIORITY_DEBUG  1
 #define LLC_PRIORITY_TRACE  0
 
-#endif
+#endif /* DEBUG */
 
 #endif

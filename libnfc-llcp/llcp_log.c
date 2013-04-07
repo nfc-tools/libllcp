@@ -40,7 +40,7 @@ llcp_log_fini(void)
 }
 
 void
-llcp_log_log(char *category, int priority, char *format, ...)
+llcp_log_log(const char *category, int priority, const char *format, ...)
 {
   switch (priority) {
     case LLC_PRIORITY_FATAL:
