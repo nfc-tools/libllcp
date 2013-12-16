@@ -25,6 +25,10 @@
 #include <pthread.h>
 #include <stdint.h>
 
+#ifdef __cplusplus
+extern  "C" {
+#endif /* __cplusplus */
+
 /*
  * Logical Link Control Protocol
  * Technical Specification
@@ -89,5 +93,8 @@ int		 llcp_disconnect(struct llc_link *link);
 #define LLCP_OBEX_URI "urn:nfc:sn:obex"
 #define LLCP_SNEP_URI "urn:nfc:sn:snep"
 
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
 
 #endif /* !_LLCP_H */

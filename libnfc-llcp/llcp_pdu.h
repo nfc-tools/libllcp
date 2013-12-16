@@ -26,6 +26,11 @@
 
 #include <stdint.h>
 
+#ifdef __cplusplus
+extern  "C" {
+#endif /* __cplusplus */
+
+
 struct llc_connection;
 
 #define PDU_SYMM    0x0
@@ -81,5 +86,9 @@ void		 pdu_free(struct pdu *pdu);
 #define pdu_new_rnr(conn) pdu_new (conn->remote_sap, PDU_RNR, conn->local_sap, conn->state.r, conn->state.s, NULL, 0)
 #define pdu_new_dm(dsap, ssap, reason) pdu_new (dsap, PDU_DM, ssap, 0, 0, reason, 1)
 #define pdu_new_ui(dsap, ssap, info, len) pdu_new (dsap, PDU_I, ssap, 0, 0, info, len)
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
 
 #endif /* !_LLCP_PDU_H */

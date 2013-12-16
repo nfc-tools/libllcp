@@ -28,6 +28,10 @@
 #include <pthread.h>
 #include <stdint.h>
 
+#ifdef __cplusplus
+extern  "C" {
+#endif /* __cplusplus */
+
 struct pdu;
 struct llc_link;
 
@@ -77,5 +81,9 @@ int		 llc_connection_recv(struct llc_connection *connection, uint8_t *data, size
 int		 llc_connection_stop(struct llc_connection *connection);
 int		 llc_connection_wait(struct llc_connection *connection, void **value_ptr);
 void		 llc_connection_free(struct llc_connection *connection);
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
 
 #endif /* !_LLC_CONNECTION_H */

@@ -28,6 +28,10 @@
 #include "llcp_pdu.h"
 #include "llcp.h"
 
+#ifdef __cplusplus
+extern  "C" {
+#endif /* __cplusplus */
+
 struct llc_link {
   uint8_t role;
   enum {
@@ -70,5 +74,9 @@ int		 llc_link_send_pdu(struct llc_link *link, const struct pdu *pdu);
 int		 llc_link_send_data(struct llc_link *link, uint8_t local_sap, uint8_t remote_sap, const uint8_t *data, size_t len);
 void		 llc_link_deactivate(struct llc_link *link);
 void		 llc_link_free(struct llc_link *link);
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
 
 #endif /* !_LLC_LINK_H */

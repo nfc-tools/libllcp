@@ -26,6 +26,10 @@
 
 #include <nfc/nfc.h>
 
+#ifdef __cplusplus
+extern  "C" {
+#endif /* __cplusplus */
+
 struct mac_link {
   enum { MAC_LINK_UNSET, MAC_LINK_INITIATOR, MAC_LINK_TARGET } mode;
   nfc_device *device;
@@ -50,5 +54,9 @@ int		 mac_link_wait(struct mac_link *link, void **value_ptr);
 int		 mac_link_deactivate(struct mac_link *link, intptr_t reason);
 
 void		 mac_link_free(struct mac_link *mac_link);
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
 
 #endif /* !_MAC_H */

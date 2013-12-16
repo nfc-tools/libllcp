@@ -25,6 +25,10 @@
 #include <pthread.h>
 #include <stdint.h>
 
+#ifdef __cplusplus
+extern  "C" {
+#endif /* __cplusplus */
+
 struct llc_service {
   char *uri;
   void *(*accept_routine)(void *);
@@ -44,5 +48,9 @@ void		 llc_service_set_rw(struct llc_service *service, uint8_t rw);
 const char	*llc_service_get_uri(const struct llc_service *service);
 const char	*llc_service_set_uri(struct llc_service *service, const char *uri);
 void		 llc_service_free(struct llc_service *service);
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
 
 #endif /* !_LLC_SERVICE_H */
