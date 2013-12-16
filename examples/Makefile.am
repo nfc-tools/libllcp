@@ -2,4 +2,6 @@
 
 SUBDIRS = \
 	npp-client \
-	npp-server
+	npp-server \
+	snep-client \
+	snep-server

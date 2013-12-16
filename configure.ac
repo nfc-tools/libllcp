@@ -93,6 +93,8 @@ AC_CONFIG_FILES([
 	   examples/Makefile
 	   examples/npp-client/Makefile
 	   examples/npp-server/Makefile
+	   examples/snep-client/Makefile
+	   examples/snep-server/Makefile
 	   libnfc-llcp/Makefile
 	   test/Makefile
 	   tools/Makefile
