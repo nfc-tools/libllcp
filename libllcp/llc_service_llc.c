@@ -25,6 +25,8 @@
 #include <sys/types.h>
 #ifndef WIN32
 #  include <sys/socket.h>
+#  include <sys/ioctl.h>
+#  include <unistd.h>
 #endif
 
 #include <assert.h>
@@ -114,7 +116,16 @@ llc_service_llc_thread(void *arg)
         break;
       }
     #else
-      #warning("Fix me, recv timeout check");
+      int available_bytes;
+      if(0 != ioctl(llc_up, FIONREAD, &available_bytes)){
+        /** socket error. */ 
+        res = -1;
+        break;
+      }
+      if(available_bytes == 0){
+        res = 0;
+        break;
+      }
     #endif
       res = recv(llc_up, (char *) buffer, sizeof(buffer), 0);
     }while(0);
@@ -416,7 +427,7 @@ spawn_logical_data_link:
         pthread_t thread = link->transmission_handlers[i]->thread;
         do{
         #ifdef WIN32
-          u_long  available_bytes;
+          u_long available_bytes;
           if( 0 != ioctlsocket(link->transmission_handlers[i]->llc_so_down, FIONREAD, &available_bytes)){
             length = -1;
             /** error */
@@ -428,7 +439,17 @@ spawn_logical_data_link:
             break;
           }
         #else
-          #warning("Fix me, timeout handle");
+          int available_bytes;
+          if( 0 != ioctl(link->transmission_handlers[i]->llc_so_down, FIONREAD, &available_bytes)){
+            length = -1;
+            /** error */
+            break;
+          }
+          if( available_bytes == 0){
+            /** no data need to read */
+            length = 0;
+            break;
+          }
         #endif
           length = recv(link->transmission_handlers[i]->llc_so_down, (char *) buffer, sizeof(buffer), 0);
         }while(0);

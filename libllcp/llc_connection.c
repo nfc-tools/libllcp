@@ -25,6 +25,7 @@
 #include <sys/types.h>
 #ifndef WIN32
 #  include <sys/socket.h>
+#  include <sys/ioctl.h>
 #endif
 
 #include <assert.h>
@@ -376,7 +377,13 @@ llc_connection_recv(struct llc_connection *connection, uint8_t *data, size_t len
     }
   }while(available_bytes == 0);
 #else
-  #waring("Fix me, wait until socket is readble");
+  int available_bytes;
+  do{
+    if(0 != ioctl(connection->llc_so_up, FIONREAD, &available_bytes)){
+      LLC_CONNECTION_MSG(LLC_PRIORITY_ERROR, "ioctlsocket err");
+      return -1;
+    }
+  }while(available_bytes == 0);
 #endif
 
   uint8_t buffer[BUFSIZ];

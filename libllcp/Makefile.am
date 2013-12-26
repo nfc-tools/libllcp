@@ -1,7 +1,7 @@
 # $Id$
 
 AM_CFLAGS = @LIBNFC_CFLAGS@
-AM_LDFLAGS = @LIBNFC_LIBS@ -lrt
+AM_LDFLAGS = @LIBNFC_LIBS@ -lrt -lpthread
 
 llcp_HEADERS = \
 		llc_connection.h \

@@ -24,6 +24,10 @@
 #include <sys/param.h>
 #include <sys/types.h>
 
+#ifndef WIN32
+#  include <sys/socket.h>
+#endif
+
 #include <assert.h>
 #include <errno.h>
 #include <pthread.h>

@@ -22,7 +22,9 @@
 #ifndef _LLC_LINK_H
 #define _LLC_LINK_H
 
+#ifdef WIN32
 #include "config.h"
+#endif
 
 #include <stdint.h>
 
@@ -39,7 +41,7 @@ extern  "C" {
 #else
   #define INVALID_SOCKET    (-1)
   #define closesocket(x)    close((x))
-  typedef sod_t int;
+  typedef int sod_t;
 #endif
 
 struct llc_link {
