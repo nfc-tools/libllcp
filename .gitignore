@@ -13,6 +13,7 @@ config.status
 config.sub
 configure
 depcomp
+doc/data-link-connection-status.png
 doc/Makefile
 doc/Makefile.in
 examples/Makefile
