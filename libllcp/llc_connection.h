@@ -22,11 +22,14 @@
 #ifndef _LLC_CONNECTION_H
 #define _LLC_CONNECTION_H
 
+#include "config.h"
+
 #include <sys/types.h>
 
-#include <mqueue.h>
 #include <pthread.h>
 #include <stdint.h>
+
+#include "llc_link.h"
 
 #ifdef __cplusplus
 extern  "C" {
@@ -49,11 +52,11 @@ struct llc_connection {
     DLC_DISCONNECTED,
     DLC_TERMINATED
   } status;
+
   pthread_t thread;
-  char *mq_up_name;
-  char *mq_down_name;
-  mqd_t llc_up;
-  mqd_t llc_down;
+  sod_t llc_so_up;
+  sod_t llc_so_down;
+
   struct {
     uint8_t s;	    /* Send State Variable */
     uint8_t sa;	    /* Send Acknowledgement State Variable */

@@ -23,7 +23,6 @@
 
 #include <assert.h>
 #include <fcntl.h>
-#include <mqueue.h>
 #include <semaphore.h>
 #include <signal.h>
 #include <stdio.h>

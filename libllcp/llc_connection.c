@@ -23,11 +23,13 @@
 
 #include <sys/param.h>
 #include <sys/types.h>
+#ifndef WIN32
+#  include <sys/socket.h>
+#endif
 
 #include <assert.h>
 #include <errno.h>
 #include <fcntl.h>
-#include <mqueue.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -71,10 +73,8 @@ llc_connection_new(struct llc_link *link, uint8_t local_sap, uint8_t remote_sap)
     res->rwr = LLCP_DEFAULT_RW;
     res->rwl = LLCP_DEFAULT_RW;
 
-    res->mq_up_name   = NULL;
-    res->mq_down_name = NULL;
-    res->llc_up   = (mqd_t) - 1;
-    res->llc_down = (mqd_t) - 1;
+    res->llc_so_up   = INVALID_SOCKET;
+    res->llc_so_down = INVALID_SOCKET;
 
     res->user_data = NULL;
   } else {
@@ -89,37 +89,24 @@ llc_connection_start(struct llc_connection *connection)
 {
   assert(connection);
 
-  struct mq_attr attr_up = {
-    .mq_msgsize = 3 + connection->local_miu,
-    .mq_maxmsg  = 2,
-  };
-
-  if (asprintf(&connection->mq_up_name, "/libllcp-%d-%p-%s", getpid(), (void *) connection, "up") < 0) {
-    LLC_CONNECTION_MSG(LLC_PRIORITY_FATAL, "Cannot print to allocated string");
+  /** need adjust socket send and recv buffer */
+  sod_t socks[2];
+  LLC_CONNECTION_MSG(LLC_PRIORITY_DEBUG, "socketpair");
+  int res = socketpair(AF_UNIX, SOCK_STREAM, 0, socks);
+  if(res < 0){
+    LLC_CONNECTION_MSG(LLC_PRIORITY_ERROR, "create socketpair failed.");
     return -1;
   }
-  connection->llc_up = mq_open(connection->mq_up_name, O_RDWR | O_CREAT, 0666, &attr_up);
-  if (connection->llc_up == (mqd_t) - 1) {
-    LLC_CONNECTION_LOG(LLC_PRIORITY_FATAL, "Cannot open message queue '%s'", connection->mq_up_name);
-    llc_connection_free(connection);
+  connection->llc_so_up = socks[0];
+  connection->llc_so_down = socks[1];
+#ifdef WIN32
+  u_long opt = 1;
+  if( 0 != ioctlsocket(connection->llc_so_down, FIONBIO, &opt) )
     return -1;
-  }
-
-  struct mq_attr attr_down = {
-    .mq_msgsize = 3 + connection->remote_miu,
-    .mq_maxmsg  = 2,
-  };
-
-  if (asprintf(&connection->mq_down_name, "/libllcp-%d-%p-%s", getpid(), (void *) connection, "down") < 0) {
-    LLC_CONNECTION_MSG(LLC_PRIORITY_FATAL, "Cannot print to allocated string");
-    return -1;
-  }
-  connection->llc_down = mq_open(connection->mq_down_name, O_RDWR | O_CREAT | O_NONBLOCK, 0666, &attr_down);
-  if (connection->llc_down == (mqd_t) - 1) {
-    LLC_CONNECTION_LOG(LLC_PRIORITY_FATAL, "Cannot open message queue '%s'", connection->mq_down_name);
-    llc_connection_free(connection);
-    return -1;
-  }
+#else
+  int opt = 1;
+  ioctl(connection->llc_so_down, FIONBIO, &opt);
+#endif
 
   return 0;
 }
@@ -347,7 +334,7 @@ int
 llc_connection_send_pdu(struct llc_connection *connection, const struct pdu *pdu)
 {
   assert(connection);
-  assert(connection->status == DLC_CONNECTED);
+//  assert(connection->status == DLC_CONNECTED);
 
   if (!pdu) {
     LLC_CONNECTION_MSG(LLC_PRIORITY_ERROR, "Can't send empty PDU");
@@ -357,7 +344,7 @@ llc_connection_send_pdu(struct llc_connection *connection, const struct pdu *pdu
   uint8_t buffer[BUFSIZ];
   int len = pdu_pack(pdu, buffer, sizeof(buffer));
 
-  if (mq_send(connection->llc_down, (char *) buffer, len, 0) < 0) {
+  if (send(connection->llc_so_up, (char *) buffer, len, 0) < 0) {
     LLC_CONNECTION_MSG(LLC_PRIORITY_ERROR, "Error enqueuing PDU");
     return -1;
   }
@@ -380,10 +367,22 @@ llc_connection_recv(struct llc_connection *connection, uint8_t *data, size_t len
 {
   int res;
 
+#ifdef WIN32
+  u_long available_bytes;
+  do{
+    if(0 != ioctlsocket(connection->llc_so_up, FIONREAD, &available_bytes)){
+      LLC_CONNECTION_MSG(LLC_PRIORITY_ERROR, "ioctlsocket err");
+      return -1;
+    }
+  }while(available_bytes == 0);
+#else
+  #waring("Fix me, wait until socket is readble");
+#endif
+
   uint8_t buffer[BUFSIZ];
-  res = mq_receive(connection->llc_up, (char *) buffer, sizeof(buffer), 0);
+  res = recv(connection->llc_so_up, (char *) buffer, sizeof(buffer), 0);
   if (res < 0) {
-    LLC_CONNECTION_LOG(LLC_PRIORITY_ERROR, "mq_receive: %s", strerror(errno));
+    LLC_CONNECTION_LOG(LLC_PRIORITY_ERROR, "socket recv: %s", strerror(errno));
     return -1;
   }
 
@@ -430,7 +429,11 @@ llc_connection_wait(struct llc_connection *connection, void **value_ptr)
       case DLC_NEW:
       case DLC_ACCEPTED:
       case DLC_RECEIVED_CC:
+      #ifdef WIN32
+        #warning("nanosleep here");
+      #else
         nanosleep(&ts, NULL);
+      #endif
         break;
       case DLC_CONNECTED:
         return pthread_join(connection->thread, value_ptr);
@@ -448,17 +451,11 @@ llc_connection_free(struct llc_connection *connection)
 
   LLC_CONNECTION_LOG(LLC_PRIORITY_TRACE, "Freeing Data Link Connection [%d -> %d]", connection->local_sap, connection->remote_sap);
 
-  if (connection->llc_up != (mqd_t) - 1)
-    mq_close(connection->llc_up);
-  if (connection->llc_down != (mqd_t) - 1)
-    mq_close(connection->llc_down);
-  if (connection->mq_up_name)
-    mq_unlink(connection->mq_up_name);
-  if (connection->mq_down_name)
-    mq_unlink(connection->mq_down_name);
+  if (connection->llc_so_up != INVALID_SOCKET)
+    closesocket(connection->llc_so_up);
+  if (connection->llc_so_down != INVALID_SOCKET)
+    closesocket(connection->llc_so_down);
 
-  free(connection->mq_up_name);
-  free(connection->mq_down_name);
   free(connection->remote_uri);
   free(connection);
 }

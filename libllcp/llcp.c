@@ -23,11 +23,13 @@
 
 #include <sys/param.h>
 #include <sys/types.h>
+#ifndef WIN32
+#  include <sys/socket.h>
+#endif
 
 #include <assert.h>
 #include <fcntl.h>
 #include <errno.h>
-#include <mqueue.h>
 #include <pthread.h>
 #include <signal.h>
 #include <stdio.h>
@@ -51,12 +53,25 @@ sigusr1_handler(int x)
 int
 llcp_init(void)
 {
+#ifndef WIN32
   struct sigaction sa;
   sa.sa_handler = sigusr1_handler;
   sa.sa_flags  = 0;
   sigemptyset(&sa.sa_mask);
   if (sigaction(SIGUSR1, &sa, NULL) < 0)
     return -1;
+#endif
+
+#ifdef WIN32
+  WSADATA wsaData;
+  int iResult;
+
+  // Initialize Winsock
+  iResult = WSAStartup(MAKEWORD(2,2), &wsaData);
+  if (iResult != 0) {
+    return -1;
+  }
+#endif
 
   return llcp_log_init();
 }
@@ -64,6 +79,10 @@ llcp_init(void)
 int
 llcp_fini(void)
 {
+#ifdef WIN32
+  WSACleanup();
+#endif
+
   return llcp_log_fini();
 }
 
@@ -92,7 +111,7 @@ void
 llcp_threadslayer(pthread_t thread)
 {
   pthread_cancel(thread);
-
+#ifndef WIN32
   /*
    * Send a signal to the thread
    *
@@ -111,7 +130,7 @@ llcp_threadslayer(pthread_t thread)
   while (0 == pthread_kill(thread, SIGUSR1)) {
     nanosleep(&delay, NULL);
   }
-
+#endif
   pthread_join(thread, NULL);
 }
 

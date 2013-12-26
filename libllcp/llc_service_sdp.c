@@ -21,8 +21,12 @@
 
 #include "config.h"
 
+#include <sys/types.h>
+#ifndef WIN32
+#  include <sys/socket.h>
+#endif
+
 #include <fcntl.h>
-#include <mqueue.h>
 #include <pthread.h>
 #include <string.h>
 
@@ -52,19 +56,16 @@ void *
 llc_service_sdp_thread(void *arg)
 {
   struct llc_connection *connection = (struct llc_connection *) arg;
-  mqd_t llc_up, llc_down;
+  sod_t llc_up;
 
   int old_cancelstate;
 
   pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, &old_cancelstate);
 
-  llc_up   = mq_open(connection->mq_up_name, O_RDONLY);
-  llc_down = mq_open(connection->mq_down_name, O_WRONLY);
+  llc_up = connection->llc_so_up;
 
-  if (llc_up == (mqd_t) - 1)
-    LLC_SDP_LOG(LLC_PRIORITY_ERROR, "mq_open(%s)", connection->mq_up_name);
-  if (llc_down == (mqd_t) - 1)
-    LLC_SDP_LOG(LLC_PRIORITY_ERROR, "mq_open(%s)", connection->mq_down_name);
+  if (llc_up == INVALID_SOCKET)
+    LLC_SDP_MSG(LLC_PRIORITY_ERROR, "Invalid socket");
 
   pthread_cleanup_push(llc_service_sdp_thread_cleanup, arg);
   pthread_setcancelstate(old_cancelstate, NULL);
@@ -73,9 +74,9 @@ llc_service_sdp_thread(void *arg)
   int res;
 
   uint8_t buffer[1024];
-  LLC_SDP_MSG(LLC_PRIORITY_TRACE, "mq_receive+");
+  LLC_SDP_MSG(LLC_PRIORITY_TRACE, "socket receive+");
   pthread_testcancel();
-  res = mq_receive(llc_up, (char *) buffer, sizeof(buffer), NULL);
+  res = recv(llc_up, (char *) buffer, sizeof(buffer), 0);
   pthread_testcancel();
   if (res < 0) {
     pthread_testcancel();
@@ -101,7 +102,7 @@ llc_service_sdp_thread(void *arg)
         buffer[1] = 0x41;
         int n = parameter_encode_sdres(buffer + 2, sizeof(buffer) - 2, tid, sap);
 
-        mq_send(llc_down, (char *) buffer, n + 2, 0);
+        send(llc_up, (char *) buffer, n + 2, 0);
         LLC_SDP_LOG(LLC_PRIORITY_TRACE, "Sent %d bytes", n + 2);
 
       }

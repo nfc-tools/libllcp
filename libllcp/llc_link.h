@@ -22,7 +22,8 @@
 #ifndef _LLC_LINK_H
 #define _LLC_LINK_H
 
-#include <mqueue.h>
+#include "config.h"
+
 #include <stdint.h>
 
 #include "llcp_pdu.h"
@@ -31,6 +32,15 @@
 #ifdef __cplusplus
 extern  "C" {
 #endif /* __cplusplus */
+
+/** uniform socket descriptor*/
+#ifdef WIN32
+  typedef SOCKET sod_t;
+#else
+  #define INVALID_SOCKET    (-1)
+  #define closesocket(x)    close((x))
+  typedef sod_t int;
+#endif
 
 struct llc_link {
   uint8_t role;
@@ -49,10 +59,8 @@ struct llc_link {
   uint8_t opt;
 
   pthread_t thread;
-  char *mq_up_name;
-  char *mq_down_name;
-  mqd_t llc_up;
-  mqd_t llc_down;
+  sod_t llc_so_up;
+  sod_t llc_so_down;
 
   struct llc_service *available_services[MAX_LLC_LINK_SERVICE + 1];
   struct llc_connection *datagram_handlers[MAX_LOGICAL_DATA_LINK];

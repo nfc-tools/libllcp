@@ -27,6 +27,8 @@
 
 #include "llcp_log.h"
 
+#ifdef DEBUG
+
 int
 llcp_log_init(void)
 {
@@ -42,6 +44,8 @@ llcp_log_fini(void)
 void
 llcp_log_log(const char *category, int priority, const char *format, ...)
 {
+/*Windows doesn't support ANSI escape sequences*/
+#ifndef WIN32
   switch (priority) {
     case LLC_PRIORITY_FATAL:
       printf("\033[37;41;1m");
@@ -60,11 +64,31 @@ llcp_log_log(const char *category, int priority, const char *format, ...)
     default:
       printf("\033[32m");
   }
+#endif
   va_list va;
   va_start(va, format);
   printf("%s\t", category);
   vprintf(format, va);
+#ifndef WIN32
   printf("[0m");
+#endif
   printf("\n");
   fflush(stdout);
 }
+
+void llcp_log_hex(const char *category, int priority, const char *buf, int len, const char *prompt, ...)
+{
+  priority = priority;
+
+  va_list va;
+  va_start(va, prompt);
+  printf("%s\t", category);
+  vprintf(prompt, va);
+
+  for(int i=0; i<len; i++){
+    printf("%02x ", (unsigned char)buf[i]);
+  }
+  printf("\n");
+}
+
+#endif

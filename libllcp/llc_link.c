@@ -23,6 +23,10 @@
 
 #include <sys/types.h>
 
+#ifndef WIN32
+#  include <sys/socket.h>
+#endif
+
 #include <assert.h>
 #include <fcntl.h>
 #if defined(HAVE_PTHREAD_NP_H)
@@ -65,12 +69,8 @@ llc_link_new(void) {
     link->mac_link = NULL;
     link->local_miu = LLCP_DEFAULT_MIU;
 
-    if ((asprintf(&link->mq_up_name, "/libllcp-%d-%p-up", getpid(), (void *) link) < 0) ||
-        (asprintf(&link->mq_down_name, "/libllcp-%d-%p-down", getpid(), (void *) link) < 0)) {
-      LLC_LINK_MSG(LLC_PRIORITY_FATAL, "Cannot print to allocated string");
-    }
-    link->llc_up   = (mqd_t) - 1;
-    link->llc_down = (mqd_t) - 1;
+    link->llc_so_up   = INVALID_SOCKET;
+    link->llc_so_down = INVALID_SOCKET;
 
     struct llc_service *sdp_service = llc_service_new_with_uri(NULL, llc_service_sdp_thread, LLCP_SDP_URI, NULL);
 
@@ -175,30 +175,25 @@ llc_link_activate(struct llc_link *link, uint8_t flags, const uint8_t *parameter
     /* FIXME: Exchange PAX PDU */
   }
 
-  /*
-   * Start link
-   */
-  struct mq_attr attr_up = {
-    .mq_msgsize = 3 + link->local_miu,
-    .mq_maxmsg  = 2,
-  };
-  LLC_LINK_LOG(LLC_PRIORITY_DEBUG, "mq_open (%s)", link->mq_up_name);
-  link->llc_up   = mq_open(link->mq_up_name, O_CREAT | O_EXCL | O_WRONLY | O_NONBLOCK, 0666, &attr_up);
-  if (link->llc_up == (mqd_t) - 1) {
-    LLC_LINK_LOG(LLC_PRIORITY_ERROR, "mq_open(%s)", link->mq_up_name);
+  /** need adjust socket send and recv buffer */
+  sod_t socks[2];
+  LLC_LINK_MSG(LLC_PRIORITY_DEBUG, "socketpair");
+  int res = socketpair(AF_UNIX, SOCK_STREAM, 0, socks);
+  if(res < 0){
+    LLC_LINK_MSG(LLC_PRIORITY_ERROR, "create socketpair failed.");
     return -1;
   }
-
-  struct mq_attr attr_down = {
-    .mq_msgsize = 3 + link->remote_miu,
-    .mq_maxmsg  = 2,
-  };
-  LLC_LINK_LOG(LLC_PRIORITY_DEBUG, "mq_open (%s)", link->mq_down_name);
-  link->llc_down = mq_open(link->mq_down_name, O_CREAT | O_EXCL | O_RDWR, 0666, &attr_down);
-  if (link->llc_down == (mqd_t) - 1) {
-    LLC_LINK_LOG(LLC_PRIORITY_ERROR, "mq_open(%s)", link->mq_down_name);
+  link->llc_so_up = socks[0];
+  link->llc_so_down = socks[1];
+#ifdef WIN32
+  // u_long opt = 1;
+  // if( 0 != ioctlsocket(link->llc_so_up, FIONBIO, &opt) )
+  //   return -1;
+#else
+  int opt = 1;
+  if( 0 != ioctl(link->llc_so_up, FIONBIO, &opt) )
     return -1;
-  }
+#endif
 
   if ((pthread_create(&link->thread, NULL, llc_service_llc_thread, link)) == 0) {
 #if defined(HAVE_DECL_PTHREAD_SET_NAME_NP) && HAVE_DECL_PTHREAD_SET_NAME_NP
@@ -362,7 +357,7 @@ llc_link_send_pdu(struct llc_link *link, const struct pdu *pdu)
   uint8_t buffer[BUFSIZ];
   int len = pdu_pack(pdu, buffer, sizeof(buffer));
 
-  if (mq_send(link->llc_down, (char *) buffer, len, 0) < 0) {
+  if (send(link->llc_so_up, (char *) buffer, len, 0) < 0) {
     LLC_LINK_MSG(LLC_PRIORITY_ERROR, "Error enqueuing PDU");
     return -1;
   }
@@ -431,18 +426,11 @@ llc_link_deactivate(struct llc_link *link)
     }
   }
 
-  if (link->llc_up != (mqd_t) - 1)
-    mq_close(link->llc_up);
-  if (link->llc_down != (mqd_t) - 1)
-    mq_close(link->llc_down);
+  if (link->llc_so_up != INVALID_SOCKET)
+    closesocket(link->llc_so_up);
+  if (link->llc_so_down != INVALID_SOCKET)
+    closesocket(link->llc_so_down);
 
-  if (link->mq_up_name)
-    mq_unlink(link->mq_up_name);
-  if (link->mq_down_name)
-    mq_unlink(link->mq_down_name);
-
-  link->llc_up   = (mqd_t) - 1;
-  link->llc_down = (mqd_t) - 1;
   LLC_LINK_MSG(LLC_PRIORITY_INFO, "LLC Link deactivated");
 }
 
@@ -458,9 +446,6 @@ llc_link_free(struct llc_link *link)
       link->available_services[i] = NULL;
     }
   }
-
-  free(link->mq_up_name);
-  free(link->mq_down_name);
 
   free(link);
 }

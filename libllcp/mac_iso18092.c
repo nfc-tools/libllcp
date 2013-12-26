@@ -44,8 +44,9 @@
 #include "mac.h"
 
 #define LOG_MAC_LINK "libllcp.mac.link"
-#define MAC_LINK_MSG(priority, message) llcp_log_log (LOG_MAC_LINK, priority, "%s", message)
+#define MAC_LINK_MSG(priority, message)     llcp_log_log (LOG_MAC_LINK, priority, "%s", message)
 #define MAC_LINK_LOG(priority, format, ...) llcp_log_log (LOG_MAC_LINK, priority, format, __VA_ARGS__)
+#define MAC_LINK_HEX(priority, prompt, buf, len)    llcp_log_hex (LOG_MAC_LINK, priority, buf, len, "%s", prompt)
 
 static uint8_t llcp_magic_number[] = { 0x46, 0x66, 0x6D };
 
@@ -228,36 +229,63 @@ mac_link_exchange_pdus(void *arg)
     MAC_LINK_LOG(LLC_PRIORITY_TRACE, "Received %d PDU bytes", (int) len);
 
     if (LL_ACTIVATED == link->llc_link->status) {
-      if (mq_send(link->llc_link->llc_up, (char *) buffer, len, 0) < 0) {
+      if (send(link->llc_link->llc_so_down, (char *) buffer, len, 0) < 0) {
         MAC_LINK_LOG(LLC_PRIORITY_FATAL, "Can't send data to LLC Link: %s", strerror(errno));
         break;
       }
+      MAC_LINK_HEX(LLC_PRIORITY_INFO, "SEND LLC_SO_DOWN: ", buffer, len);
     }
 
-    struct timespec ts;
-    ts.tv_sec = link->llc_link->local_lto.tv_sec;
-    ts.tv_nsec = link->llc_link->local_lto.tv_usec * 1000;
+    struct timeval timeouts;
+    timeouts.tv_sec = link->llc_link->local_lto.tv_sec;
+    timeouts.tv_usec = link->llc_link->local_lto.tv_usec;
 
     /* Wait LTO - 2ms */
-    if (ts.tv_nsec < 2000000) {
-      ts.tv_sec -= 1;
-      ts.tv_nsec = ts.tv_nsec + 1000000000 - 2000000;
-    } else {
-      ts.tv_nsec -= 2000000;
+    if(timeouts.tv_usec < 2000){
+      timeouts.tv_sec -= 1;
+      timeouts.tv_usec = timeouts.tv_usec + 1000000 - 2000;
+    }else{
+      timeouts.tv_usec -= 2000;
     }
 
-    len = mq_timedreceive(link->llc_link->llc_down, (char *) buffer, sizeof(buffer), NULL, &ts);
+    timeouts.tv_sec = 0;
+    timeouts.tv_usec = 30000;
 
-    if (len < 0) {
-      switch (errno) {
-        case ETIMEDOUT:
-          buffer[0] = buffer[1] = 0x00;
-          len = 2;
-          break;
-        default:
-          break;
+    fd_set rfds;
+    int res;
+
+    do{
+      #warning("this must be timeout recv");
+
+      FD_ZERO(&rfds);
+      FD_SET (link->llc_link->llc_so_down, &rfds);
+      
+      res = select(link->llc_link->llc_so_down+1, &rfds, NULL, NULL, &timeouts);
+      if(res < 0){
+        len = -1;
+        break;
+      }else if(res == 0){
+        buffer[0] = buffer[1] = 0x00;
+        len = 2;
+        MAC_LINK_MSG(LLC_PRIORITY_TRACE, "Select timeout.");
+        break;
       }
-    }
+
+      // int available_bytes;
+      // if( 0 != ioctlsocket(link->llc_link->llc_so_down, FIONREAD, &available_bytes)){
+      //   len = -1;
+      //   break;
+      // }
+      // if( available_bytes == 0){
+      //   buffer[0] = buffer[1] = 0x00;
+      //   len = 2;
+      //   break;
+      // }
+
+      len = recv(link->llc_link->llc_so_down, (char *) buffer, sizeof(buffer), 0);
+      MAC_LINK_HEX(LLC_PRIORITY_INFO, "RECV LLC_SO_DOWN: ", buffer, len);
+    }while(0);
+
     if (len < 0) {
       MAC_LINK_LOG(LLC_PRIORITY_FATAL, "Can't receive data from LLC Link: %s", strerror(errno));
       break;

@@ -152,15 +152,15 @@ main(int argc, char *argv[])
     errx(EXIT_FAILURE, "Cannot create MAC link");
   }
   
-  struct llc_service *com_android_npp;
-  if (!(com_android_npp = llc_service_new(NULL, com_android_snep_service, NULL))){
-    errx(EXIT_FAILURE, "Cannot create com.android.npp service");
+  struct llc_service *com_android_snep;
+  if (!(com_android_snep = llc_service_new(NULL, com_android_snep_service, NULL))){
+    errx(EXIT_FAILURE, "Cannot create com.android.snep service");
   }
-  llc_service_set_miu(com_android_npp, 512);
-  llc_service_set_rw(com_android_npp, 2);
+  llc_service_set_miu(com_android_snep, 512);
+  llc_service_set_rw(com_android_snep, 2);
 
   int sap;
-  if ((sap = llc_link_service_bind(llc_link, com_android_npp, 0x20)) < 0)
+  if ((sap = llc_link_service_bind(llc_link, com_android_snep, 0x20)) < 0)
     errx(EXIT_FAILURE, "Cannot bind service");
 
 //  struct llc_connection *con = llc_outgoing_data_link_connection_new_by_uri(llc_link, sap, "urn:nfc:sn:snep");

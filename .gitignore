@@ -4,6 +4,7 @@ Makefile.in
 aclocal.m4
 ar-lib
 autom4te.cache/
+build
 config.guess
 config.h
 config.h.in
@@ -86,3 +87,4 @@ tools/llcp-test-server/connected-echo-server.o
 tools/llcp-test-server/connectionless-echo-server.o
 tools/llcp-test-server/llcp-test-server
 tools/llcp-test-server/llcp-test-server.o
+*.patch

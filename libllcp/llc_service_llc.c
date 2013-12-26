@@ -23,11 +23,13 @@
 
 #include <sys/param.h>
 #include <sys/types.h>
+#ifndef WIN32
+#  include <sys/socket.h>
+#endif
 
 #include <assert.h>
 #include <fcntl.h>
 #include <errno.h>
-#include <mqueue.h>
 #include <pthread.h>
 #if defined(HAVE_PTHREAD_NP_H)
 #  include <pthread_np.h>
@@ -59,21 +61,21 @@ llc_service_llc_thread_cleanup(void *arg)
    */
   struct llc_link *link = (struct llc_link *)arg;
 
-  if (link->llc_up != (mqd_t) - 1)
-    mq_close(link->llc_up);
+  if (link->llc_so_up != INVALID_SOCKET)
+    closesocket(link->llc_so_up);
 
-  if (link->llc_down != (mqd_t) - 1)
-    mq_close(link->llc_down);
+  if (link->llc_so_down != INVALID_SOCKET)
+    closesocket(link->llc_so_down);
 
-  link->llc_up   = (mqd_t) - 1;
-  link->llc_down = (mqd_t) - 1;
+  link->llc_so_up   = INVALID_SOCKET;
+  link->llc_so_down = INVALID_SOCKET;
 }
 
 void *
 llc_service_llc_thread(void *arg)
 {
   struct llc_link *link = (struct llc_link *)arg;
-  mqd_t llc_up, llc_down;
+  sod_t llc_up, llc_down;
 
   int old_cancelstate;
 #if defined(HAVE_DECL_PTHREAD_SET_NAME_NP) && HAVE_DECL_PTHREAD_SET_NAME_NP
@@ -82,13 +84,13 @@ llc_service_llc_thread(void *arg)
 
   pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, &old_cancelstate);
 
-  llc_up = mq_open(link->mq_up_name, O_RDONLY);
-  llc_down = mq_open(link->mq_down_name, O_WRONLY);
+  llc_up = link->llc_so_up;
+  llc_down = link->llc_so_down;
 
-  if (llc_up == (mqd_t) - 1)
-    LLC_SERVICE_LLC_LOG(LLC_PRIORITY_ERROR, "mq_open(%s)", link->mq_up_name);
-  if (llc_down == (mqd_t) - 1)
-    LLC_SERVICE_LLC_LOG(LLC_PRIORITY_ERROR, "mq_open(%s)", link->mq_down_name);
+  if (llc_up == INVALID_SOCKET)
+    LLC_SERVICE_LLC_MSG(LLC_PRIORITY_ERROR, "llc_up socket invalid");
+  if (llc_down == INVALID_SOCKET)
+    LLC_SERVICE_LLC_MSG(LLC_PRIORITY_ERROR, "llc_down socket invalid");
 
   pthread_cleanup_push(llc_service_llc_thread_cleanup, arg);
   pthread_setcancelstate(old_cancelstate, NULL);
@@ -96,11 +98,33 @@ llc_service_llc_thread(void *arg)
   for (;;) {
     int res;
     uint8_t buffer[1024];
-    LLC_SERVICE_LLC_MSG(LLC_PRIORITY_TRACE, "mq_receive+");
+    LLC_SERVICE_LLC_MSG(LLC_PRIORITY_TRACE, "socket recv+");
     pthread_testcancel();
-    res = mq_receive(llc_up, (char *) buffer, sizeof(buffer), NULL);
+    
+    do{
+    #ifdef WIN32
+      u_long available_bytes;
+      if(0 != ioctlsocket(llc_up, FIONREAD, &available_bytes)){
+        /** socket error. */ 
+        res = -1;
+        break;
+      }
+      if(available_bytes == 0){
+        res = 0;
+        break;
+      }
+    #else
+      #warning("Fix me, recv timeout check");
+    #endif
+      res = recv(llc_up, (char *) buffer, sizeof(buffer), 0);
+    }while(0);
+
+    LLC_SERVICE_LLC_MSG(LLC_PRIORITY_TRACE, "socket recv+ done");
     pthread_testcancel();
     if (res < 0) {
+      #ifdef WIN32
+      LLC_SERVICE_LLC_LOG(LLC_PRIORITY_TRACE, "Received error: %d", GetLastError());
+      #endif
       pthread_testcancel();
     }
     LLC_SERVICE_LLC_LOG(LLC_PRIORITY_TRACE, "Received %d bytes", res);
@@ -137,7 +161,7 @@ llc_service_llc_thread(void *arg)
         while (*p) {
           uint8_t buffer[BUFSIZ];
           ssize_t length = pdu_pack(*p, buffer, sizeof(buffer));
-          mq_send(link->llc_up, (char *) buffer, length, 1);
+          send(link->llc_so_down, (char *) buffer, length, 0);
           pdu_free(*p);
           p++;
         }
@@ -181,7 +205,7 @@ spawn_logical_data_link:
         free(thread_name);
 #endif
 
-        if (mq_send(connection->llc_up, (char *) buffer, res, 0) < 0) {
+        if (send(connection->llc_so_down, (char *) buffer, res, 0) < 0) {
           LLC_SERVICE_LLC_LOG(LLC_PRIORITY_ERROR, "Cannot send data to Logical Data Link [%d -> %d]", connection->local_sap, connection->remote_sap);
           break;
         }
@@ -203,7 +227,7 @@ spawn_logical_data_link:
           reply = pdu_new_dm(pdu->ssap, pdu->dsap, reason);
           len = pdu_pack(reply, buffer, sizeof(buffer));
           pdu_free(reply);
-          if (mq_send(llc_down, (char *) buffer, len, 0) < 0) {
+          if (send(llc_up, (char *) buffer, len, 0) < 0) {
             LLC_SERVICE_LLC_MSG(LLC_PRIORITY_FATAL, "Cannot reject connection");
           }
           break;
@@ -220,7 +244,7 @@ spawn_logical_data_link:
           reply = pdu_new_dm(pdu->ssap, pdu->dsap, reason);
           len = pdu_pack(reply, buffer, sizeof(buffer));
           pdu_free(reply);
-          if (mq_send(llc_down, (char *) buffer, len, 0) < 0) {
+          if (send(llc_up, (char *) buffer, len, 0) < 0) {
             LLC_SERVICE_LLC_MSG(LLC_PRIORITY_FATAL, "Can't Reject connection");
           }
           break;
@@ -257,7 +281,7 @@ spawn_logical_data_link:
           reply = pdu_new_dm(pdu->ssap, pdu->dsap, reason);
           int len = pdu_pack(reply, buffer, sizeof(buffer));
           pdu_free(reply);
-          if (mq_send(llc_down, (char *) buffer, len, 0) < 0) {
+          if (send(llc_up, (char *) buffer, len, 0) < 0) {
             LLC_SERVICE_LLC_MSG(LLC_PRIORITY_FATAL, "Can't send DM");
           }
         }
@@ -277,16 +301,14 @@ spawn_logical_data_link:
         assert(link->transmission_handlers[pdu->dsap]);
         LLC_SERVICE_LLC_MSG(LLC_PRIORITY_TRACE, "Information PDU");
 #if defined(HAVE_DEBUG)
-        struct mq_attr attr;
-        mq_getattr(link->transmission_handlers[pdu->dsap]->llc_up, &attr);
-        LLC_SERVICE_LLC_LOG(LLC_PRIORITY_DEBUG, "MQ: %d / %d x %d bytes", attr.mq_curmsgs, attr.mq_maxmsg, attr.mq_msgsize);
+        // PDU_I debug info can be added here.
 #endif
         if (pdu->ns != link->transmission_handlers[pdu->dsap]->state.r) {
           LLC_SERVICE_LLC_MSG(LLC_PRIORITY_FATAL, "Invalid N(S)");
           struct pdu *reply = pdu_new_frmr(pdu->ssap, pdu->dsap, pdu, link->transmission_handlers[pdu->dsap], FRMR_S);
           int len = pdu_pack(reply, buffer, sizeof(buffer));
           pdu_free(reply);
-          if (mq_send(llc_down, (char *) buffer, len, 0) < 0) {
+          if (send(llc_up, (char *) buffer, len, 0) < 0) {
             LLC_SERVICE_LLC_MSG(LLC_PRIORITY_FATAL, "Can't send FRMR");
           }
 
@@ -298,7 +320,7 @@ spawn_logical_data_link:
           struct pdu *reply = pdu_new_frmr(pdu->ssap, pdu->dsap, pdu, link->transmission_handlers[pdu->dsap], FRMR_I);
           int len = pdu_pack(reply, buffer, sizeof(buffer));
           pdu_free(reply);
-          if (mq_send(llc_down, (char *) buffer, len, 0) < 0) {
+          if (send(llc_up, (char *) buffer, len, 0) < 0) {
             LLC_SERVICE_LLC_MSG(LLC_PRIORITY_FATAL, "Can't send FRMR");
           }
 
@@ -308,7 +330,7 @@ spawn_logical_data_link:
         INC_MOD_16(link->transmission_handlers[pdu->dsap]->state.r);
         link->transmission_handlers[pdu->dsap]->state.sa = pdu->nr;
 
-        if (mq_send(link->transmission_handlers[pdu->dsap]->llc_up, (char *) buffer, res, 0) < 0) {
+        if (send(link->transmission_handlers[pdu->dsap]->llc_so_down, (char *) buffer, res, 0) < 0) {
           LLC_SERVICE_LLC_LOG(LLC_PRIORITY_ERROR, "Error sending %d bytes to service %d", res, pdu->dsap);
         } else {
           LLC_SERVICE_LLC_LOG(LLC_PRIORITY_INFO, "Send %d bytes to service %d", res, pdu->dsap);
@@ -355,12 +377,14 @@ spawn_logical_data_link:
     pthread_setcancelstate(old_cancelstate, NULL);
 
     /* ---------------- */
-
+    LLC_SERVICE_LLC_MSG(LLC_PRIORITY_TRACE, "Start handle datagram.");
+    
     ssize_t length = 0;
     for (int i = 0; i <= MAX_LOGICAL_DATA_LINK; i++) {
       if (link->datagram_handlers[i]) {
+        LLC_SERVICE_LLC_LOG(LLC_PRIORITY_TRACE, "datagram_handlers %d", i);
         pthread_t thread = link->datagram_handlers[i]->thread;
-        length = mq_receive(link->datagram_handlers[i]->llc_down, (char *) buffer, sizeof(buffer), NULL);
+        length = recv(link->datagram_handlers[i]->llc_so_down, (char *) buffer, sizeof(buffer), 0);
         if (length > 0)
           break;
         switch (errno) {
@@ -385,10 +409,29 @@ spawn_logical_data_link:
         }
       }
     }
+
+    LLC_SERVICE_LLC_MSG(LLC_PRIORITY_TRACE, "Start handle transmission.");
     for (int i = 1; i <= MAX_LLC_LINK_SERVICE; i++) {
       if (link->transmission_handlers[i]) {
         pthread_t thread = link->transmission_handlers[i]->thread;
-        length = mq_receive(link->transmission_handlers[i]->llc_down, (char *) buffer, sizeof(buffer), NULL);
+        do{
+        #ifdef WIN32
+          u_long  available_bytes;
+          if( 0 != ioctlsocket(link->transmission_handlers[i]->llc_so_down, FIONREAD, &available_bytes)){
+            length = -1;
+            /** error */
+            break;
+          }
+          if( available_bytes == 0){
+            /** no data need to read */
+            length = 0;
+            break;
+          }
+        #else
+          #warning("Fix me, timeout handle");
+        #endif
+          length = recv(link->transmission_handlers[i]->llc_so_down, (char *) buffer, sizeof(buffer), 0);
+        }while(0);
         LLC_SERVICE_LLC_LOG(LLC_PRIORITY_TRACE, "Read %d bytes from service %d", length, i);
         if (length > 0) {
 #if defined(HAVE_DEBUG)
@@ -407,7 +450,7 @@ spawn_logical_data_link:
                * We can't send data now
                */
               LLC_SERVICE_LLC_LOG(LLC_PRIORITY_WARN, "Data Link Connection [%d -> %d] send-window is full.  Postponing message delivery", link->transmission_handlers[i]->local_sap, link->transmission_handlers[i]->remote_sap);
-              mq_send(link->transmission_handlers[i]->llc_down, (char *) buffer, length, 1);
+              send(link->transmission_handlers[i]->llc_so_up, (char *) buffer, length, 0);
               length = -1;
               continue;
             }
@@ -419,8 +462,9 @@ spawn_logical_data_link:
           INC_MOD_16(link->transmission_handlers[i]->state.s);
           break;
         }
-        switch (errno) {
-          case EAGAIN:
+        LLC_SERVICE_LLC_LOG(LLC_PRIORITY_TRACE, "length =  %d service = %d", length, i);
+        switch (length) {
+          case 0:
             if (thread) {
               /*
                * If we have received some data not yet acknoledge, do it now.
@@ -437,9 +481,8 @@ spawn_logical_data_link:
               if (link->transmission_handlers[i]->state.ra != link->transmission_handlers[i]->state.r) {
                 LLC_SERVICE_LLC_MSG(LLC_PRIORITY_WARN, "Send acknoledgment for received data");
                 struct pdu *reply;
-                struct mq_attr attr;
-                mq_getattr(link->transmission_handlers[i]->llc_up, &attr);
-                if (attr.mq_curmsgs == attr.mq_maxmsg) {
+                /** check if mq is full? */
+                if (0) {
                   LLC_SERVICE_LLC_MSG(LLC_PRIORITY_INFO, "Message queue is full");
                   reply = pdu_new_rnr(link->transmission_handlers[i]);
                 } else {
@@ -502,19 +545,16 @@ spawn_logical_data_link:
                   break;
               }
             }
-            /* FALLTHROUGH */
-          case EINTR:
-          case ETIMEDOUT: /* XXX Should not happend */
-            /* NOOP */
             break;
-          default:
+            /* FALLTHROUGH */
+          case -1:
             LLC_SERVICE_LLC_LOG(LLC_PRIORITY_ERROR, "Can't read from service %d message queue", i);
             break;
         }
       }
     }
 
-    LLC_SERVICE_LLC_MSG(LLC_PRIORITY_TRACE, "mq_send+");
+    LLC_SERVICE_LLC_MSG(LLC_PRIORITY_TRACE, "socket send+");
     pthread_testcancel();
 
     if (length <= 0) {
@@ -522,7 +562,7 @@ spawn_logical_data_link:
       continue;
     }
 
-    res = mq_send(llc_down, (char *) buffer, length, 0);
+    res = send(llc_up, (char *) buffer, length, 0);
     pthread_testcancel();
 
     if (res < 0) {
