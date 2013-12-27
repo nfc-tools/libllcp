@@ -72,6 +72,11 @@ llc_link_new(void) {
 
     link->llc_so_up   = INVALID_SOCKET;
     link->llc_so_down = INVALID_SOCKET;
+    int ret = pthread_mutex_init(&link->mutex, NULL);
+    if (ret != 0) {
+      LLC_LINK_MSG(LLC_PRIORITY_FATAL,"Mutex Initialization Failed");
+      return NULL;
+    }
 
     struct llc_service *sdp_service = llc_service_new_with_uri(NULL, llc_service_sdp_thread, LLCP_SDP_URI, NULL);
 
@@ -380,6 +385,13 @@ void
 llc_link_deactivate(struct llc_link *link)
 {
   assert(link);
+  
+  /*
+   * llc_link_deactivate will may be called by multiple threads at same time. Like:
+   *   When communicate error occurs, mac_link_exchange_pdus() need to call this function to kill all threads.
+   *   When connection is disconnected, main() function may want to call this function. 
+   */
+  pthread_mutex_lock(&link->mutex);
 
   LLC_LINK_MSG(LLC_PRIORITY_INFO, "Deactivating LLC Link");
 
@@ -432,7 +444,12 @@ llc_link_deactivate(struct llc_link *link)
   if (link->llc_so_down != INVALID_SOCKET)
     closesocket(link->llc_so_down);
 
+  link->llc_so_up = INVALID_SOCKET;
+  link->llc_so_down = INVALID_SOCKET;
+
   LLC_LINK_MSG(LLC_PRIORITY_INFO, "LLC Link deactivated");
+
+  pthread_mutex_unlock(&link->mutex);
 }
 
 void

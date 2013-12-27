@@ -71,6 +71,8 @@ llc_service_llc_thread_cleanup(void *arg)
 
   link->llc_so_up   = INVALID_SOCKET;
   link->llc_so_down = INVALID_SOCKET;
+
+  LLC_SERVICE_LLC_MSG(LLC_PRIORITY_NOTICE, "Thread quit");
 }
 
 void *
@@ -104,10 +106,12 @@ llc_service_llc_thread(void *arg)
     pthread_testcancel();
     
     do{
+      // request cancellation request
+      pthread_testcancel();
     #ifdef WIN32
       u_long available_bytes;
       if(0 != ioctlsocket(llc_up, FIONREAD, &available_bytes)){
-        /** socket error. */ 
+        LLC_SERVICE_LLC_MSG(LLC_PRIORITY_FATAL, "socket error");
         res = -1;
         break;
       }
@@ -118,17 +122,18 @@ llc_service_llc_thread(void *arg)
     #else
       int available_bytes;
       if(0 != ioctl(llc_up, FIONREAD, &available_bytes)){
-        /** socket error. */ 
+        LLC_SERVICE_LLC_MSG(LLC_PRIORITY_FATAL, "socket error");
         res = -1;
         break;
       }
       if(available_bytes == 0){
         res = 0;
-        break;
+        continue;
       }
     #endif
       res = recv(llc_up, (char *) buffer, sizeof(buffer), 0);
-    }while(0);
+      // wait until data is received or thread is canceled.
+    }while(res == 0);
 
     LLC_SERVICE_LLC_MSG(LLC_PRIORITY_TRACE, "socket recv+ done");
     pthread_testcancel();

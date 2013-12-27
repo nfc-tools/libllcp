@@ -28,6 +28,7 @@ int  llcp_log_init(void);
 int  llcp_log_fini(void);
 void llcp_log_log(const char *category, int priority, const char *format, ...);
 void llcp_log_hex(const char *category, int priority, const char *buf, int len, const char *prompt, ...);
+void llcp_log_print_pdu_header(const char *category, const char *buf);
 
 #define LLC_PRIORITY_FATAL  0
 #define LLC_PRIORITY_ALERT  1
@@ -47,6 +48,7 @@ void llcp_log_hex(const char *category, int priority, const char *buf, int len, 
 #define llcp_log_set_appender(category, appender) do {} while (0)
 #define llcp_log_log(category, priority, format, ...) do {} while (0)
 #define llcp_log_hex(category, priority, buf, len, prompt, ...) do {} while(0)
+#define llcp_log_print_pdu_header(category, buf)  do{} while(0)
 
 #define LLC_PRIORITY_FATAL  8
 #define LLC_PRIORITY_ALERT  7

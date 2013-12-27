@@ -379,6 +379,7 @@ llc_connection_recv(struct llc_connection *connection, uint8_t *data, size_t len
 #else
   int available_bytes;
   do{
+    pthread_testcancel();
     if(0 != ioctl(connection->llc_so_up, FIONREAD, &available_bytes)){
       LLC_CONNECTION_MSG(LLC_PRIORITY_ERROR, "ioctlsocket err");
       return -1;
@@ -411,10 +412,17 @@ llc_connection_stop(struct llc_connection *connection)
 
   LLC_CONNECTION_LOG(LLC_PRIORITY_TRACE, "Stopping Data Link Connection [%d -> %d]", connection->local_sap, connection->remote_sap);
 
+  if(connection->thread == 0){
+    connection->status = DLC_DISCONNECTED;
+    return 0;
+  }
+
   if (connection->thread == pthread_self()) {
     connection->status = DLC_DISCONNECTED;
     pthread_exit(NULL);
   } else {
+    connection->status = DLC_DISCONNECTED;
+    LLC_CONNECTION_MSG(LLC_PRIORITY_TRACE, "connection killed by other threads.");
     llcp_threadslayer(connection->thread);
     connection->thread = 0;
   }
@@ -443,6 +451,7 @@ llc_connection_wait(struct llc_connection *connection, void **value_ptr)
       #endif
         break;
       case DLC_CONNECTED:
+
         return pthread_join(connection->thread, value_ptr);
         break;
       default:
@@ -462,7 +471,10 @@ llc_connection_free(struct llc_connection *connection)
     closesocket(connection->llc_so_up);
   if (connection->llc_so_down != INVALID_SOCKET)
     closesocket(connection->llc_so_down);
+  
+  if(connection->remote_uri != NULL)
+    free(connection->remote_uri);
 
-  free(connection->remote_uri);
-  free(connection);
+  if(connection != NULL)
+    free(connection);
 }

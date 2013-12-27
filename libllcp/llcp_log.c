@@ -24,6 +24,7 @@
 #include <stdio.h>
 #include <stdarg.h>
 #include <fcntl.h>
+#include <stdint.h>
 
 #include "llcp_log.h"
 
@@ -89,6 +90,33 @@ void llcp_log_hex(const char *category, int priority, const char *buf, int len, 
     printf("%02x ", (unsigned char)buf[i]);
   }
   printf("\n");
+}
+
+void llcp_log_print_pdu_header(const char *category, const char *buf)
+{
+  const char ptypeName [][16]={
+    "SYMM",
+    "PAX",
+    "AGF",
+    "UI",
+    "CONNECT",
+    "DISC",
+    "CC",
+    "DM",
+    "FRMR",
+    "SNL",
+    "RESERVED",
+    "RESERVED",
+    "I",
+    "RR",
+    "RNR",
+    "RESERVED",
+  };
+  uint8_t dsap, ptype, ssap;
+  dsap = (uint8_t)buf[0]>>2;
+  ptype = (((uint8_t)buf[0]&0x03)<<2) | (((uint8_t)buf[1]&0xC0)>>6);
+  ssap = (uint8_t)buf[1]&0x3F;
+  printf("\033[36;1m%s\tDSAP: %02X, PTYPE: %s(%02X), SSAP: %02X\033[0m\n", category, dsap, ptypeName[ptype], ptype, ssap);
 }
 
 #endif

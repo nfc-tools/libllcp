@@ -61,6 +61,8 @@ struct llc_link {
   uint8_t opt;
 
   pthread_t thread;
+  pthread_mutex_t mutex;
+
   sod_t llc_so_up;
   sod_t llc_so_down;
 

@@ -48,10 +48,11 @@
 #include "mac.h"
 
 #define LOG_MAC_LINK "libllcp.mac.link"
-#define MAC_LINK_MSG(priority, message)     llcp_log_log (LOG_MAC_LINK, priority, "%s", message)
-#define MAC_LINK_LOG(priority, format, ...) llcp_log_log (LOG_MAC_LINK, priority, format, __VA_ARGS__)
+#define MAC_LINK_MSG(priority, message)             llcp_log_log (LOG_MAC_LINK, priority, "%s", message)
+#define MAC_LINK_LOG(priority, format, ...)         llcp_log_log (LOG_MAC_LINK, priority, format, __VA_ARGS__)
 #define MAC_LINK_HEX(priority, prompt, buf, len)    llcp_log_hex (LOG_MAC_LINK, priority, buf, len, "%s", prompt)
-
+#define MAC_LINK_PDU(priority, buf)                 llcp_log_print_pdu_header(LOG_MAC_LINK, buf)
+ 
 static uint8_t llcp_magic_number[] = { 0x46, 0x66, 0x6D };
 
 static uint8_t defaultid[10] = { 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09 };
@@ -219,8 +220,13 @@ mac_link_exchange_pdus(void *arg)
   if (link->mode == MAC_LINK_INITIATOR) {
     /* Bootstrap the LLC communication sending a SYMM PDU */
     uint8_t symm[2] = { 0x00, 0x00 };
-    if (pdu_send(link, symm, sizeof(symm)) < 0)
+    if (pdu_send(link, symm, sizeof(symm)) < 0){
+      MAC_LINK_MSG(LLC_PRIORITY_FATAL, "Bootstrap failed.");
+      /** sedn PDU error, delete all thread.*/
+      llc_link_deactivate(link->llc_link);
+      *link->exchange_pdus_thread = 0;
       return NULL;
+    }
   }
 
   uint8_t buffer[BUFSIZ];
@@ -237,7 +243,6 @@ mac_link_exchange_pdus(void *arg)
         MAC_LINK_LOG(LLC_PRIORITY_FATAL, "Can't send data to LLC Link: %s", strerror(errno));
         break;
       }
-      MAC_LINK_HEX(LLC_PRIORITY_INFO, "SEND LLC_SO_DOWN: ", buffer, len);
     }
 
     struct timeval timeouts;
@@ -252,14 +257,14 @@ mac_link_exchange_pdus(void *arg)
       timeouts.tv_usec -= 2000;
     }
 
+    /* fix me, Wait LTO-2ms seems too long to communicate with android, change it to 100ms */
     timeouts.tv_sec = 0;
-    timeouts.tv_usec = 30000;
+    timeouts.tv_usec = 100000;
 
     fd_set rfds;
     int res;
 
     do{
-      #warning("this must be timeout recv");
 
       FD_ZERO(&rfds);
       FD_SET (link->llc_link->llc_so_down, &rfds);
@@ -275,19 +280,7 @@ mac_link_exchange_pdus(void *arg)
         break;
       }
 
-      // int available_bytes;
-      // if( 0 != ioctlsocket(link->llc_link->llc_so_down, FIONREAD, &available_bytes)){
-      //   len = -1;
-      //   break;
-      // }
-      // if( available_bytes == 0){
-      //   buffer[0] = buffer[1] = 0x00;
-      //   len = 2;
-      //   break;
-      // }
-
       len = recv(link->llc_link->llc_so_down, (char *) buffer, sizeof(buffer), 0);
-      MAC_LINK_HEX(LLC_PRIORITY_INFO, "RECV LLC_SO_DOWN: ", buffer, len);
     }while(0);
 
     if (len < 0) {
@@ -302,9 +295,10 @@ mac_link_exchange_pdus(void *arg)
     }
   }
 
-  link->exchange_pdus_thread = NULL;
-
   MAC_LINK_LOG(LLC_PRIORITY_ERROR, "NFC error: %s", nfc_strerror(link->device));
+  llc_link_deactivate(link->llc_link);
+  *link->exchange_pdus_thread = 0;
+
   switch (nfc_device_get_last_error(link->device)) {
     case NFC_ETGRELEASED:
       /* The initiator has left the target's field */
@@ -383,7 +377,7 @@ int
 mac_link_deactivate(struct mac_link *link, intptr_t reason)
 {
   assert(link);
-  assert((link->exchange_pdus_thread == NULL) || (*link->exchange_pdus_thread != pthread_self()));
+  assert(link->exchange_pdus_thread);
 
   MAC_LINK_LOG(LLC_PRIORITY_INFO, "MAC Link deactivation requested (reason: %d)", reason);
 
@@ -391,9 +385,13 @@ mac_link_deactivate(struct mac_link *link, intptr_t reason)
     MAC_LINK_MSG(LLC_PRIORITY_WARN, "MAC Link already stopped");
     return 0;
   }
-
-  llcp_threadslayer(*link->exchange_pdus_thread);
-  link->exchange_pdus_thread = NULL;
+  if(*link->exchange_pdus_thread == pthread_self()){
+    return 0;
+  }else{
+    llcp_threadslayer(*link->exchange_pdus_thread);
+    free(link->exchange_pdus_thread);
+    link->exchange_pdus_thread = NULL;
+  }
 
   bool st;
   if (link->mode == MAC_LINK_INITIATOR) {
@@ -409,6 +407,7 @@ mac_link_deactivate(struct mac_link *link, intptr_t reason)
         st = true;
         break;
       default:
+        MAC_LINK_MSG(LLC_PRIORITY_ERROR, "Initiator Abort.");
         abort();
         break;
     }
@@ -426,6 +425,7 @@ mac_link_deactivate(struct mac_link *link, intptr_t reason)
         st = true;
         break;
       default:
+        MAC_LINK_MSG(LLC_PRIORITY_ERROR, "Target Abort.");
         abort();
         break;
     }
@@ -464,6 +464,10 @@ pdu_send(struct mac_link *link, const void *buf, size_t nbytes)
 
   if (res < 0)
     MAC_LINK_LOG(LLC_PRIORITY_FATAL, "Could not send %d bytes", nbytes);
+
+  MAC_LINK_HEX(LLC_PRIORITY_INFO, "TX: ", buf, nbytes);
+  MAC_LINK_PDU(LLC_PRIORITY_INFO, buf);
+
   pthread_setcancelstate(oldstate, NULL);
 
   return res;
@@ -479,10 +483,14 @@ pdu_receive(struct mac_link *link, void *buf, size_t nbytes)
     res = MIN(nbytes, link->buffer_size);
     MAC_LINK_LOG(LLC_PRIORITY_TRACE, "Received %d bytes (Requested %d, buffer size %d)", res, nbytes, link->buffer_size);
     memcpy(buf, link->buffer, res);
+    MAC_LINK_HEX(LLC_PRIORITY_INFO, "RX: ", buf, res);
+    MAC_LINK_PDU(LLC_PRIORITY_INFO, buf);
     return res;
   } else {
     if ((res = nfc_target_receive_bytes(link->device, buf, nbytes, timeout + 2000)) >= 0) {
       MAC_LINK_LOG(LLC_PRIORITY_TRACE, "Received %d bytes", res);
+      MAC_LINK_HEX(LLC_PRIORITY_INFO, "RX: ", buf, res);
+      MAC_LINK_PDU(LLC_PRIORITY_INFO, buf);
       return res;
     }
   }

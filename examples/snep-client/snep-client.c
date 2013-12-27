@@ -76,7 +76,8 @@ shexdump(char *dest, const uint8_t *buf, const size_t size)
   return res;
 }
 
-static void printhex(char *s, uint8_t *buf, int len)
+static void
+printhex(char *s, uint8_t *buf, int len)
 {
   printf("%s", s);
   int i;
@@ -113,6 +114,7 @@ com_android_snep_service(void *arg)
   ret = llc_connection_recv(connection, buf, sizeof(buf), &ssap);
   if(ret>0){
     printf("Send NDEF message done.\n");
+    printhex("Receive SNEP packege: ", buf, ret);
   }else if(ret ==  0){
     printf("Received no data\n");
   }else{
