@@ -110,6 +110,7 @@ llcp_version_agreement(struct llc_link *link, struct llcp_version version)
 void
 llcp_threadslayer(pthread_t thread)
 {
+  LLCP_LOG(LLC_PRIORITY_WARN, "Try to stop thread (%d) ", thread);
   pthread_cancel(thread);
 #ifndef WIN32
   /*
@@ -132,6 +133,7 @@ llcp_threadslayer(pthread_t thread)
   }
 #endif
   pthread_join(thread, NULL);
+  LLCP_LOG(LLC_PRIORITY_WARN, "Thread (%d) stopped", thread);
 }
 
 int

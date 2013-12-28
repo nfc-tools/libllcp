@@ -231,6 +231,7 @@ mac_link_exchange_pdus(void *arg)
 
   uint8_t buffer[BUFSIZ];
   for (;;) {
+    pthread_testcancel();
     ssize_t len = pdu_receive(link, buffer, sizeof(buffer));
     if (len < 0) {
       MAC_LINK_LOG(LLC_PRIORITY_WARN, "pdu_receive returned %d", len);

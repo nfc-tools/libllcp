@@ -117,7 +117,7 @@ llc_service_llc_thread(void *arg)
       }
       if(available_bytes == 0){
         res = 0;
-        break;
+        continue;
       }
     #else
       int available_bytes;
