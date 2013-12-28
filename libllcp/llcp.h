@@ -22,6 +22,11 @@
 #ifndef _LLCP_H
 #define _LLCP_H
 
+#ifdef WIN32
+#include <winsock2.h>
+#include <windows.h>
+#endif
+
 #include <pthread.h>
 #include <stdint.h>
 

@@ -371,6 +371,7 @@ llc_connection_recv(struct llc_connection *connection, uint8_t *data, size_t len
 #ifdef WIN32
   u_long available_bytes;
   do{
+    pthread_testcancel();
     if(0 != ioctlsocket(connection->llc_so_up, FIONREAD, &available_bytes)){
       LLC_CONNECTION_MSG(LLC_PRIORITY_ERROR, "ioctlsocket err");
       return -1;

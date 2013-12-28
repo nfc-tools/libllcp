@@ -22,10 +22,6 @@
 #ifndef _LLC_LINK_H
 #define _LLC_LINK_H
 
-#ifdef WIN32
-#include "config.h"
-#endif
-
 #include <stdint.h>
 
 #include "llcp_pdu.h"

@@ -22,10 +22,6 @@
 #ifndef _LLC_CONNECTION_H
 #define _LLC_CONNECTION_H
 
-#ifdef WIN32
-#include "config.h"
-#endif
-
 #include <sys/types.h>
 
 #include <pthread.h>
